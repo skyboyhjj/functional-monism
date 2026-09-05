@@ -68,6 +68,8 @@
 | `src/models/thoughtseed.py`     | 思维种子竞争逻辑（EFE 赢家通吃）。                                                                     |
 | `src/models/pde_solver.py`      | 泛函变分 PDE 求解器。                                                                           |
 | `src/models/bayesian_filter.py` | 泛函贝叶斯滤波器。                                                                               |
+| `src/models/workspace.py`         | 冥想种子引擎：`MeditationSeed` + `GlobalWorkspace` 赢家通吃竞争。                                          |
+| `apps/meditation_dashboard.py`    | **交互式仪表盘**：Streamlit + Plotly 可视化，γ 滑块、呼吸锚定、杂念冲击时间点可调。                                |
 | `axioms/` 目录                    | 三大公理与定理的 LaTeX 数学形式化。                                                                   |
 
 ***
@@ -124,7 +126,7 @@ pytest tests/
 
 - [ ] **优化方向 2（探索-利用权衡）**：在 `thoughtseed.py` 中引入更复杂的**预期自由能 (EFE)** 计算，让思维种子在"高精度利用（锁定目标）"和"低精度探索（收集信息）"之间做出权衡。
 
-- [ ] **优化方向 3（泛函泛化）**：将当前的一维二次泛函（(\frac{1}{2}\gamma x^2)）扩展为**多维非凸泛函**（例如包含多个局部极小值），以模拟复杂的认知决策景观。
+- [ ] **优化方向 4（状态空间升维）**：将 `meditation_dashboard.py` 的状态流从 1D 标量扩展为 R² 或 R³ 多维空间。需配套设计多维可视化方案（2D 热力图/相图，3D 轨迹图），`workspace.py` 模型层已支持多维 `core_attractor`，主要改动在仪表盘前端。可结合"情绪-注意力"双轴或"效价-唤醒度"平面进行概念建模。
 
 - [ ] **文档**：撰写 `papers/duality_experiment_report.md`，记录 `duality_demo.py` 的实验结论。
 

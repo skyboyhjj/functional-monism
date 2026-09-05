@@ -70,7 +70,16 @@ with st.sidebar:
         max_value=5.0,
         value=2.0,
         step=0.5,
-        help="在 t=80 时注入的外部杂念强度。模拟冥想中突然的干扰。",
+        help="外部杂念的干扰强度。模拟冥想中突然的干扰。",
+    )
+
+    perturbation_time = st.slider(
+        "杂念冲击时刻",
+        min_value=0,
+        max_value=190,
+        value=80,
+        step=10,
+        help="杂念冲击发生的时间步。数值越小，干扰越早出现。",
     )
 
     st.divider()
@@ -124,8 +133,9 @@ np.random.seed(42)
 noise = np.random.randn(steps) * 0.1
 state_stream = np.cumsum(noise)
 
-# 在 t=80 注入杂念冲击
-state_stream[80] += perturbation_strength
+# 注入杂念冲击
+if perturbation_time < steps:
+    state_stream[perturbation_time] += perturbation_strength
 
 # 存储每步的激活值
 activation_history = {name: np.zeros(steps) for name in seed_names}
@@ -174,11 +184,12 @@ with col1:
         )
 
     # 标记杂念冲击时间点
-    fig.add_vline(
-        x=80, line_dash="dash", line_color="red",
-        annotation_text="杂念冲击", annotation_position="top",
-        row=1, col=1,
-    )
+    if perturbation_time < steps:
+        fig.add_vline(
+            x=perturbation_time, line_dash="dash", line_color="red",
+            annotation_text="杂念冲击", annotation_position="top",
+            row=1, col=1,
+        )
 
     # 下图：每步的胜出种子（用颜色块表示）
     unique_dominants = sorted(set(dominant_history))
@@ -269,7 +280,7 @@ st.markdown(
     "**使用指南**：\n"
     "- **新手模式（γ=0.3）**：杂念频繁胜出，模拟注意力散乱\n"
     "- **专家模式（γ=3.0 + 锚定=5.0）**：Breath Focus 统治时间线，几乎不受扰动\n"
-    "- **扰动测试**：观察 t=80 杂念冲击在不同 γ 下的表现差异\n\n"
+    "- **扰动测试**：观察杂念冲击在不同 γ 和时间点下的表现差异\n\n"
     "**理论对应**：\n"
     "- 公理 I（存在）：每个种子 = 一个泛函 F[ψ]，定义在状态空间上\n"
     "- 公理 II（演化）：状态流沿噪声驱动，种子通过能量竞争\n"
