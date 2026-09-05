@@ -78,6 +78,30 @@ class MeditationSeed:
         self.activation = float(jnp.exp(-effective_gamma * energy))
         return self.activation
 
+    def expected_free_energy(self, current_state, global_gamma):
+        """计算当前种子的预期自由能（EFE）。
+
+        公理 IV（决策公理）：G = γ_eff · ‖ψ − ψ_core‖² + ln(γ_eff)
+
+        其中：
+            - 第一项 γ_eff·‖Δ‖²：奖惩成本（利用倾向，Exploit）
+            - 第二项 ln(γ_eff)：复杂度成本（探索倾向，Explore）
+
+        高 γ 时，第一项让种子更靠近吸引子（利用），但第二项
+        ln(γ) 惩罚过度自信（探索），形成贝叶斯模型选择的本质权衡。
+
+        Args:
+            current_state: 当前全局状态 ψ。
+            global_gamma: 全局精度 γ > 0。
+
+        Returns:
+            float: 预期自由能 G。
+        """
+        psi = jnp.asarray(current_state, dtype=jnp.float32)
+        delta = psi - self.core_attractor
+        effective_gamma = global_gamma * self.precision_boost
+        return float(effective_gamma * jnp.sum(delta ** 2) + jnp.log(effective_gamma + 1e-12))
+
     def __repr__(self):
         return (f"MeditationSeed({self.name}, "
                 f"ψ_core={float(self.core_attractor.ravel()[0]):.1f}, "
@@ -99,15 +123,17 @@ class GlobalWorkspace:
         self.seeds = list(seeds)
         self.dominant_seed = None
 
-    def compete(self, current_state, global_gamma):
+    def compete(self, current_state, global_gamma, use_efe=False):
         """执行一轮种子竞争。
 
-        1. 每个种子基于当前状态和全局精度更新激活值。
-        2. 赢家通吃：激活值最高者胜出。
+        支持两种竞争模式：
+            - use_efe=False（默认）：激活值最高者胜出（a = exp(-γ·E)）
+            - use_efe=True：预期自由能最低者胜出（G = γ·‖Δ‖² + ln(γ)）
 
         Args:
             current_state: 当前全局状态 ψ。
             global_gamma: 全局精度 γ > 0。
+            use_efe: 是否使用 EFE 竞争模式。
 
         Returns:
             tuple: (activations_dict, dominant_seed)
@@ -120,8 +146,18 @@ class GlobalWorkspace:
                 current_state, global_gamma
             )
 
-        # 赢家通吃
-        winner_name = max(activations, key=activations.get)
+        if use_efe:
+            # EFE 模式：选择预期自由能最低的种子
+            efe_values = {}
+            for seed in self.seeds:
+                efe_values[seed.name] = seed.expected_free_energy(
+                    current_state, global_gamma
+                )
+            winner_name = min(efe_values, key=efe_values.get)
+        else:
+            # 激活值模式（原有逻辑）
+            winner_name = max(activations, key=activations.get)
+
         self.dominant_seed = next(
             s for s in self.seeds if s.name == winner_name
         )
@@ -134,6 +170,23 @@ class GlobalWorkspace:
             list[float]: 按 seeds 顺序排列的激活值列表。
         """
         return [s.activation for s in self.seeds]
+
+    def get_efe_values(self, current_state, global_gamma):
+        """返回所有种子当前的 EFE 值，用于可视化。
+
+        Args:
+            current_state: 当前全局状态 ψ。
+            global_gamma: 全局精度 γ > 0。
+
+        Returns:
+            dict: {seed_name: efe_value}
+        """
+        efe_dict = {}
+        for seed in self.seeds:
+            efe_dict[seed.name] = seed.expected_free_energy(
+                current_state, global_gamma
+            )
+        return efe_dict
 
     def __repr__(self):
         if self.dominant_seed:

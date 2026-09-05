@@ -84,6 +84,15 @@ with st.sidebar:
 
     st.divider()
 
+    use_efe = st.checkbox(
+        "EFE 竞争模式（预期自由能最小化）",
+        value=False,
+        help="启用后，竞争机制从'激活值最高者胜出'切换为'预期自由能最低者胜出'。"
+             "EFE = γ·‖Δ‖² + ln(γ)，其中第一项是奖惩成本，第二项是复杂度成本。",
+    )
+
+    st.divider()
+
     st.markdown("### 🧠 场景预设")
     preset = st.selectbox(
         "选择预设场景",
@@ -103,7 +112,8 @@ with st.sidebar:
     st.markdown(
         "- **公理 I**：能量 E = ½‖ψ − ψ_core‖²\n"
         "- **公理 II**：演化沿负梯度方向\n"
-        "- **公理 III**：激活 a = exp(−γ·E)"
+        "- **公理 III**：激活 a = exp(−γ·E)\n"
+        "- **公理 IV**：EFE G = γ·‖Δ‖² + ln(γ)"
     )
 
 # ============================================================================
@@ -147,7 +157,7 @@ for t in range(steps):
     # 应用呼吸锚定
     workspace.seeds[0].precision_boost = anchor_breath
 
-    activations, dominant = workspace.compete(state, global_gamma)
+    activations, dominant = workspace.compete(state, global_gamma, use_efe=use_efe)
 
     for seed in workspace.seeds:
         activation_history[seed.name][t] = seed.activation
@@ -240,7 +250,8 @@ with col2:
     )
 
     # 最终激活值柱状图
-    st.subheader("📊 最终激活值")
+    bar_title = "最终激活值（EFE 模式下的胜出者）" if use_efe else "最终激活值"
+    st.subheader(f"📊 {bar_title}")
 
     final_acts = {name: activation_history[name][-1] for name in seed_names}
     bar_fig = go.Figure(
@@ -259,6 +270,16 @@ with col2:
         xaxis=dict(range=[0, 1.05], title="激活值"),
     )
     st.plotly_chart(bar_fig, use_container_width=True)
+
+    # EFE 值显示（仅在 EFE 模式下显示）
+    if use_efe:
+        st.subheader("⚡ 预期自由能 (EFE)")
+        current_state = float(state_stream[-1])
+        efe_values = workspace.get_efe_values(current_state, global_gamma)
+        for name in seed_names:
+            efe = efe_values.get(name, 0.0)
+            st.text(f"{name}: {efe:.3f}")
+        st.caption("EFE 越低 = 该种子越有优势")
 
     # 统计信息
     st.subheader("📋 统计")
@@ -280,9 +301,11 @@ st.markdown(
     "**使用指南**：\n"
     "- **新手模式（γ=0.3）**：杂念频繁胜出，模拟注意力散乱\n"
     "- **专家模式（γ=3.0 + 锚定=5.0）**：Breath Focus 统治时间线，几乎不受扰动\n"
-    "- **扰动测试**：观察杂念冲击在不同 γ 和时间点下的表现差异\n\n"
+    "- **扰动测试**：观察杂念冲击在不同 γ 和时间点下的表现差异\n"
+    "- **EFE 模式**：勾选后切换为预期自由能竞争，展示贝叶斯模型选择的探索-利用权衡\n\n"
     "**理论对应**：\n"
     "- 公理 I（存在）：每个种子 = 一个泛函 F[ψ]，定义在状态空间上\n"
     "- 公理 II（演化）：状态流沿噪声驱动，种子通过能量竞争\n"
-    "- 公理 III（精度）：γ 作为曲率参数，控制激活函数的陡峭度"
+    "- 公理 III（精度）：γ 作为曲率参数，控制激活函数的陡峭度\n"
+    "- 公理 IV（决策）：G = γ·‖Δ‖² + ln(γ)，在精度与复杂度之间权衡"
 )
