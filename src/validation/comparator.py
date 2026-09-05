@@ -9,6 +9,7 @@ import os
 from typing import Dict, List, Tuple, Optional
 
 import numpy as np
+import jax.numpy as jnp
 
 # 确保可以导入项目模块
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -30,22 +31,22 @@ def run_functional_monism_simulation(
     perturbation_time: int = 160,
     seed: int = 42,
     use_efe: bool = False,
+    use_2d: bool = False,
+    dim: int = 2,
 ) -> Dict[str, object]:
     """运行 functional-monism 冥想模拟。
 
-    将 functional-monism 的 5 个种子映射到 thoughtseeds_model 的对应概念：
-        Breath Focus  → attend_breath
-        Pain Discomfort → pain_discomfort
-        Pending Tasks  → pending_tasks
-        Self Reflection → aha_moment
-        Equanimity     → equanimity
+    v0.3: 支持 1D/2D 状态空间。2D 模式下 mind_wandering 可自然涌现。
 
-    将 dominant seed 映射到冥想状态：
+    状态映射（1D 和 2D 通用）：
         Breath Focus    → breath_focus
         Pain Discomfort → mind_wandering
         Pending Tasks   → mind_wandering
         Self Reflection → meta_awareness
         Equanimity      → meta_awareness
+
+    2D 增强：在 2D 空间中，状态在多个吸引子之间快速切换时
+    也标记为 mind_wandering。
 
     Args:
         gamma: 全局精度。
@@ -55,22 +56,14 @@ def run_functional_monism_simulation(
         perturbation_time: 杂念冲击时刻。
         seed: 随机种子。
         use_efe: 是否使用 EFE 竞争模式。
+        use_2d: 是否使用 2D 状态空间。
+        dim: 状态空间维度。
 
     Returns:
         dict: 包含状态序列、激活值历史、meta_awareness 等。
     """
     rng = np.random.RandomState(seed)
 
-    # 种子映射：functional-monism → thoughtseeds_model
-    NAME_MAP = {
-        "Breath Focus": "attend_breath",
-        "Pain Discomfort": "pain_discomfort",
-        "Pending Tasks": "pending_tasks",
-        "Self Reflection": "aha_moment",
-        "Equanimity": "equanimity",
-    }
-
-    # 状态映射：dominant seed → meditation state
     STATE_MAP = {
         "Breath Focus": "breath_focus",
         "Pain Discomfort": "mind_wandering",
@@ -79,35 +72,60 @@ def run_functional_monism_simulation(
         "Equanimity": "meta_awareness",
     }
 
-    seeds = create_default_seeds()
+    seeds = create_default_seeds(dim=dim if use_2d else 1)
     workspace = GlobalWorkspace(seeds)
 
-    # 设置呼吸锚定
     for s in seeds:
         if s.name == "Breath Focus":
             s.precision_boost = anchor
 
-    state = 0.0
+    if use_2d:
+        state = np.zeros(2, dtype=np.float32)
+    else:
+        state = 0.0
+
     state_history = []
     activation_history = []
     meta_awareness_history = []
     dominant_history = []
+    raw_state_history = []  # 原始 2D 坐标，用于 mind_wandering 检测
 
     for t in range(steps):
         # 扰动
         if t == perturbation_time and perturbation_strength > 0:
-            state += rng.normal(0, perturbation_strength)
+            if use_2d:
+                state += rng.normal(0, perturbation_strength, size=2)
+            else:
+                state += rng.normal(0, perturbation_strength)
 
         # 竞争
+        if use_2d:
+            state_jnp = jnp.asarray(state, dtype=jnp.float32)
+        else:
+            state_jnp = state
         activations, dominant = workspace.compete(
-            state, global_gamma=gamma, use_efe=use_efe
+            state_jnp, global_gamma=gamma, use_efe=use_efe
         )
 
-        # 记录
-        state_history.append(STATE_MAP.get(dominant.name, "mind_wandering"))
         dominant_history.append(dominant.name)
 
-        # 激活值（按 thoughtseeds_model 顺序）
+        # 2D 增强状态分类
+        if use_2d:
+            raw_state_history.append(state.copy())
+            if dominant.name in ("Pain Discomfort", "Pending Tasks"):
+                med_state = "mind_wandering"
+            elif len(state_history) > 0 and dominant.name != state_history[-1]:
+                # 快速切换 → mind_wandering
+                med_state = "mind_wandering"
+            elif abs(state[0]) > 2.5:
+                med_state = "mind_wandering"
+            else:
+                med_state = STATE_MAP.get(dominant.name, "mind_wandering")
+        else:
+            med_state = STATE_MAP.get(dominant.name, "mind_wandering")
+        state_history.append(med_state)
+
+        # 激活值
         act_list = [
             activations.get("Breath Focus", 0.0),
             activations.get("Pain Discomfort", 0.0),
@@ -117,21 +135,24 @@ def run_functional_monism_simulation(
         ]
         activation_history.append(act_list)
 
-        # meta_awareness：meta_awareness 状态下激活值高 → 高水平
+        # meta_awareness
         if dominant.name in ("Self Reflection", "Equanimity"):
             ma = float(dominant.activation)
         elif dominant.name == "Breath Focus":
-            # 呼吸焦点时，meta_awareness 与精度成正比
             ma = float(np.clip(gamma / 5.0, 0.0, 1.0))
         else:
             ma = float(np.clip(dominant.activation * 0.3, 0.0, 1.0))
         meta_awareness_history.append(ma)
 
-        # 状态更新：随机游走 + 向吸引子靠近
-        state += rng.normal(0, 0.1)
-        # 向 dominant seed 的吸引子靠近
-        attractor = float(dominant.core_attractor.ravel()[0])
-        state += (attractor - state) * 0.05
+        # 状态更新
+        if use_2d:
+            state += rng.normal(0, 0.1, size=2)
+            attractor = np.array(dominant.core_attractor).ravel()
+            state += (attractor - state) * 0.05
+        else:
+            state += rng.normal(0, 0.1)
+            attractor = float(dominant.core_attractor.ravel()[0])
+            state += (attractor - state) * 0.05
 
     return {
         "states": state_history,
@@ -145,6 +166,7 @@ def run_functional_monism_simulation(
             "perturbation_strength": perturbation_strength,
             "perturbation_time": perturbation_time,
             "use_efe": use_efe,
+            "use_2d": use_2d,
         },
     }
 

@@ -103,8 +103,10 @@ class MeditationSeed:
         return float(effective_gamma * jnp.sum(delta ** 2) + jnp.log(effective_gamma + 1e-12))
 
     def __repr__(self):
+        vals = self.core_attractor.ravel()
+        coords = ", ".join(f"{float(v):.1f}" for v in vals)
         return (f"MeditationSeed({self.name}, "
-                f"ψ_core={float(self.core_attractor.ravel()[0]):.1f}, "
+                f"ψ_core=[{coords}], "
                 f"a={self.activation:.3f})")
 
 
@@ -199,16 +201,34 @@ class GlobalWorkspace:
 # 预设种子配置
 # ------------------------------------------------------------------
 
-def create_default_seeds():
+def create_default_seeds(dim=2):
     """创建冥想模拟器的默认 5 种子配置。
+
+    2D 语义：
+        - 轴 0（注意力）：0 = 完全专注, 正方向 = 注意力散乱
+        - 轴 1（情绪/唤醒）：0 = 平静, 正方向 = 紧张/焦虑, 负方向 = 平和
+
+    1D 兼容模式（dim=1）使用 x 轴坐标。
+
+    Args:
+        dim: 状态空间维度（1 或 2）。
 
     Returns:
         list[MeditationSeed]: 预设种子列表。
     """
-    return [
-        MeditationSeed("Breath Focus", [0.0]),
-        MeditationSeed("Pain Discomfort", [2.0]),
-        MeditationSeed("Pending Tasks", [3.5]),
-        MeditationSeed("Self Reflection", [5.0]),
-        MeditationSeed("Equanimity", [-1.0]),
-    ]
+    if dim == 1:
+        return [
+            MeditationSeed("Breath Focus", [0.0]),
+            MeditationSeed("Pain Discomfort", [2.0]),
+            MeditationSeed("Pending Tasks", [3.5]),
+            MeditationSeed("Self Reflection", [5.0]),
+            MeditationSeed("Equanimity", [-1.0]),
+        ]
+    else:
+        return [
+            MeditationSeed("Breath Focus", [0.0, 0.0]),    # 平静原点 (专注, 平静)
+            MeditationSeed("Pain Discomfort", [2.0, 1.0]),  # 身体不适区 (散乱, 紧张)
+            MeditationSeed("Pending Tasks", [3.0, -1.0]),   # 焦虑区 (散乱, 焦虑)
+            MeditationSeed("Self Reflection", [-2.0, 2.0]), # 反思区 (内省, 高唤醒)
+            MeditationSeed("Equanimity", [-1.0, -1.5]),     # 平和的另一极 (内省, 平和)
+        ]
