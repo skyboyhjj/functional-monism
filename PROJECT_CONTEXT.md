@@ -68,8 +68,8 @@
 | `src/models/thoughtseed.py`     | 思维种子竞争逻辑（EFE 赢家通吃）。                                                                     |
 | `src/models/pde_solver.py`      | 泛函变分 PDE 求解器。                                                                           |
 | `src/models/bayesian_filter.py` | 泛函贝叶斯滤波器。                                                                               |
-| `src/models/workspace.py`         | 冥想种子引擎：`MeditationSeed` + `GlobalWorkspace` 赢家通吃竞争。                                          |
-| `apps/meditation_dashboard.py`    | **交互式仪表盘**：Streamlit + Plotly 可视化，γ 滑块、呼吸锚定、杂念冲击时间点可调。                                |
+| `src/models/workspace.py`       | 冥想种子引擎：`MeditationSeed` + `GlobalWorkspace` 赢家通吃竞争。                                     |
+| `apps/meditation_dashboard.py`  | **交互式仪表盘**：Streamlit + Plotly 可视化，γ 滑块、呼吸锚定、杂念冲击时间点可调。                                  |
 | `axioms/` 目录                    | 三大公理与定理的 LaTeX 数学形式化。                                                                   |
 
 ***
