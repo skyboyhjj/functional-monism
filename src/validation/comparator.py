@@ -1,7 +1,6 @@
 """对比引擎：运行 functional-monism 模拟，与 thoughtseeds_model 数据对比。
 
-通过在不同 (γ, anchor) 配置下运行 functional-monism 模拟器，
-提取与 thoughtseeds_model 相同的指标，计算误差并评估复现程度。
+v0.4: 集成 Ornstein-Uhlenbeck 噪声，支持 theta/sigma 参数扫描。
 """
 
 import sys
@@ -19,6 +18,7 @@ from src.models.workspace import (
     GlobalWorkspace,
     create_default_seeds,
 )
+from src.models.ou_noise import OUNoise
 from .data_loader import THOUGHTSEED_NAMES, MEDITATION_STATES
 from .metrics import extract_all_metrics
 
@@ -33,10 +33,12 @@ def run_functional_monism_simulation(
     use_efe: bool = False,
     use_2d: bool = False,
     dim: int = 2,
+    theta: float = 0.15,
+    sigma_ou: float = 0.20,
 ) -> Dict[str, object]:
     """运行 functional-monism 冥想模拟。
 
-    v0.3: 支持 1D/2D 状态空间。2D 模式下 mind_wandering 可自然涌现。
+    v0.4: 使用 Ornstein-Uhlenbeck 噪声驱动状态，支持 theta/sigma 参数调节。
 
     状态映射（1D 和 2D 通用）：
         Breath Focus    → breath_focus
@@ -45,8 +47,8 @@ def run_functional_monism_simulation(
         Self Reflection → meta_awareness
         Equanimity      → meta_awareness
 
-    2D 增强：在 2D 空间中，状态在多个吸引子之间快速切换时
-    也标记为 mind_wandering。
+    v0.4 增强分类（2D 模式）：
+        基于吸引子距离 + 连续驻留 + 回归检测，自动识别 redirect_attention。
 
     Args:
         gamma: 全局精度。
@@ -58,19 +60,13 @@ def run_functional_monism_simulation(
         use_efe: 是否使用 EFE 竞争模式。
         use_2d: 是否使用 2D 状态空间。
         dim: 状态空间维度。
+        theta: OU 回归速度（v0.4 新增）。
+        sigma_ou: OU 波动幅度（v0.4 新增）。
 
     Returns:
         dict: 包含状态序列、激活值历史、meta_awareness 等。
     """
     rng = np.random.RandomState(seed)
-
-    STATE_MAP = {
-        "Breath Focus": "breath_focus",
-        "Pain Discomfort": "mind_wandering",
-        "Pending Tasks": "mind_wandering",
-        "Self Reflection": "meta_awareness",
-        "Equanimity": "meta_awareness",
-    }
 
     seeds = create_default_seeds(dim=dim if use_2d else 1)
     workspace = GlobalWorkspace(seeds)
@@ -79,49 +75,55 @@ def run_functional_monism_simulation(
         if s.name == "Breath Focus":
             s.precision_boost = anchor
 
+    # 种子吸引子坐标
+    attractors = {
+        s.name: np.array(s.core_attractor).ravel() for s in seeds
+    }
+
+    # OU 噪声生成轨迹
     if use_2d:
-        state = np.zeros(2, dtype=np.float32)
+        ou = OUNoise(dim=2, theta=theta, sigma=sigma_ou)
+        perturbations = []
+        if perturbation_time < steps and perturbation_strength > 0:
+            perturbations.append((perturbation_time, np.array([2.0, 0.5])))
+        state_stream = ou.generate_trajectory(steps, perturbations=perturbations)
     else:
-        state = 0.0
+        ou = OUNoise(dim=1, theta=theta, sigma=sigma_ou)
+        perturbations = []
+        if perturbation_time < steps and perturbation_strength > 0:
+            perturbations.append((perturbation_time, np.array([perturbation_strength])))
+        state_stream = ou.generate_trajectory(steps, perturbations=perturbations).ravel()
 
     state_history = []
     activation_history = []
     meta_awareness_history = []
     dominant_history = []
-    raw_state_history = []  # 原始 2D 坐标，用于 mind_wandering 检测
 
     for t in range(steps):
-        # 扰动
-        if t == perturbation_time and perturbation_strength > 0:
-            if use_2d:
-                state += rng.normal(0, perturbation_strength, size=2)
-            else:
-                state += rng.normal(0, perturbation_strength)
-
-        # 竞争
         if use_2d:
-            state_jnp = jnp.asarray(state, dtype=jnp.float32)
+            state_jnp = jnp.asarray(state_stream[t], dtype=jnp.float32)
         else:
-            state_jnp = state
+            state_jnp = float(state_stream[t])
+
         activations, dominant = workspace.compete(
             state_jnp, global_gamma=gamma, use_efe=use_efe
         )
 
         dominant_history.append(dominant.name)
 
-        # 2D 增强状态分类
+        # v0.4 增强状态分类
         if use_2d:
-            raw_state_history.append(state.copy())
-            if dominant.name in ("Pain Discomfort", "Pending Tasks"):
-                med_state = "mind_wandering"
-            elif len(state_history) > 0 and dominant.name != state_history[-1]:
-                # 快速切换 → mind_wandering
-                med_state = "mind_wandering"
-            elif abs(state[0]) > 2.5:
-                med_state = "mind_wandering"
-            else:
-                med_state = STATE_MAP.get(dominant.name, "mind_wandering")
+            prev_sv = state_stream[t - 1] if t > 0 else None
+            sv = state_stream[t]
+            med_state = _classify_state_v4(sv, dominant.name, attractors, prev_sv)
         else:
+            STATE_MAP = {
+                "Breath Focus": "breath_focus",
+                "Pain Discomfort": "mind_wandering",
+                "Pending Tasks": "mind_wandering",
+                "Self Reflection": "meta_awareness",
+                "Equanimity": "meta_awareness",
+            }
             med_state = STATE_MAP.get(dominant.name, "mind_wandering")
         state_history.append(med_state)
 
@@ -144,16 +146,6 @@ def run_functional_monism_simulation(
             ma = float(np.clip(dominant.activation * 0.3, 0.0, 1.0))
         meta_awareness_history.append(ma)
 
-        # 状态更新
-        if use_2d:
-            state += rng.normal(0, 0.1, size=2)
-            attractor = np.array(dominant.core_attractor).ravel()
-            state += (attractor - state) * 0.05
-        else:
-            state += rng.normal(0, 0.1)
-            attractor = float(dominant.core_attractor.ravel()[0])
-            state += (attractor - state) * 0.05
-
     return {
         "states": state_history,
         "activations": activation_history,
@@ -167,8 +159,49 @@ def run_functional_monism_simulation(
             "perturbation_time": perturbation_time,
             "use_efe": use_efe,
             "use_2d": use_2d,
+            "theta": theta,
+            "sigma_ou": sigma_ou,
         },
     }
+
+
+def _classify_state_v4(
+    state_vec: np.ndarray,
+    dominant_name: str,
+    attractors: dict,
+    prev_state_vec: np.ndarray = None,
+    threshold_near: float = 1.5,
+    threshold_far: float = 2.0,
+) -> str:
+    """v0.4 增强状态分类：基于吸引子距离 + 连续驻留 + 回归检测。
+
+    1. 杂念种子附近 → mind_wandering
+    2. 远离原点后快速回拉 → redirect_attention
+    3. 元认知种子附近 → meta_awareness
+    4. 默认 → breath_focus
+    """
+    dist_to_origin = np.linalg.norm(state_vec)
+
+    dist_to_pain = np.linalg.norm(state_vec - attractors["Pain Discomfort"])
+    dist_to_tasks = np.linalg.norm(state_vec - attractors["Pending Tasks"])
+    if dist_to_pain < threshold_near or dist_to_tasks < threshold_near:
+        return "mind_wandering"
+
+    if prev_state_vec is not None:
+        prev_dist = np.linalg.norm(prev_state_vec)
+        if (
+            prev_dist > threshold_far
+            and dist_to_origin < threshold_near
+            and dist_to_origin < prev_dist * 0.6
+        ):
+            return "redirect_attention"
+
+    dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
+    dist_to_equanimity = np.linalg.norm(state_vec - attractors["Equanimity"])
+    if dist_to_reflection < threshold_near or dist_to_equanimity < threshold_near:
+        return "meta_awareness"
+
+    return "breath_focus"
 
 
 def compute_relative_error(
@@ -300,3 +333,55 @@ def compare_metrics(
     }
 
     return errors
+
+
+def scan_ou_parameters(
+    theta_values: List[float],
+    sigma_values: List[float],
+    gamma: float = 1.0,
+    anchor: float = 1.0,
+    steps: int = 200,
+    use_efe: bool = False,
+    seed: int = 42,
+) -> List[Dict[str, object]]:
+    """v0.4: 在 (theta, sigma) 网格上扫描 OU 参数。
+
+    Args:
+        theta_values: θ 值列表。
+        sigma_values: σ 值列表。
+        gamma: 全局精度。
+        anchor: 呼吸锚定强度。
+        steps: 模拟步数。
+        use_efe: 是否使用 EFE 模式。
+        seed: 随机种子。
+
+    Returns:
+        list[dict]: 每组的配置 + 状态分布统计。
+    """
+    results = []
+    for th in theta_values:
+        for sg in sigma_values:
+            res = run_functional_monism_simulation(
+                gamma=gamma,
+                anchor=anchor,
+                steps=steps,
+                use_2d=True,
+                theta=th,
+                sigma_ou=sg,
+                use_efe=use_efe,
+                seed=seed,
+            )
+            states = res["states"]
+            counts = {}
+            for s in states:
+                counts[s] = counts.get(s, 0) + 1
+            total = len(states)
+            results.append({
+                "theta": th,
+                "sigma": sg,
+                "breath_focus_pct": counts.get("breath_focus", 0) / total * 100,
+                "mind_wandering_pct": counts.get("mind_wandering", 0) / total * 100,
+                "meta_awareness_pct": counts.get("meta_awareness", 0) / total * 100,
+                "redirect_attention_pct": counts.get("redirect_attention", 0) / total * 100,
+            })
+    return results

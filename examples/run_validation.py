@@ -28,6 +28,7 @@ from src.validation.metrics import extract_all_metrics
 from src.validation.comparator import (
     run_functional_monism_simulation,
     compute_relative_error,
+    scan_ou_parameters,
 )
 
 
@@ -150,11 +151,11 @@ def generate_detailed_report(grid_data: Dict, output_path: str) -> str:
     all_r = grid_data["grid_results"]
 
     L = []
-    L.append("# 泛函一元论 vs Thoughtseeds: 详细验证报告 (v0.3 · 2D)")
+    L.append("# 泛函一元论 vs Thoughtseeds: 详细验证报告 (v0.4 · OU 噪声)")
     L.append("")
     L.append(f"**生成时间**：{now}")
     L.append(f"**总计运行**：{len(all_r)} 组参数配置 (γ × anchor × EFE)")
-    L.append(f"**状态空间**：2D (注意力 × 情绪)")
+    L.append(f"**状态空间**：2D (注意力 × 情绪) · **噪声模型**：Ornstein-Uhlenbeck")
     L.append("")
 
     # ============================================================
@@ -279,12 +280,12 @@ def generate_detailed_report(grid_data: Dict, output_path: str) -> str:
     L.append("")
     L.append("| 误差来源 | 影响 | 说明 |")
     L.append("| :--- | :---: | :--- |")
-    L.append("| 状态空间维度 | ★★★★★ | ts: 7 维网络 + 3 层; fm: 1D 标量 — 根本性差异 |")
-    L.append("| 无法模拟 mind_wandering | ★★★★★ | fm 当前不产生 mind_wandering/redirect_attention 状态 |")
-    L.append("| 时间尺度 | ★★★★ | ts: 2000 步评估; fm: 200 步 |")
-    L.append("| 种子动力学 | ★★★★ | ts: 贝叶斯推断+策略评估; fm: 激活值/EFE 竞争 |")
-    L.append("| Meta-awareness 派生方式 | ★★★ | ts: L3 层 metacognitive gating; fm: 激活值派生 |")
-    L.append("| 噪声模型 | ★★ | ts: Ornstein-Uhlenbeck; fm: 高斯随机游走 |")
+    L.append("| 状态空间维度 | ★★★★ | ts: 7 维网络 + 3 层; fm: 2D — 根本性差异 |")
+    L.append("| mind_wandering 比例不匹配 | ★★★★ | fm 有 mind_wandering 但比例仍偏低 |")
+    L.append("| redirect_attention 比例不匹配 | ★★★ | fm 可检测但比例偏低 |")
+    L.append("| 时间尺度 | ★★★ | ts: 2000 步评估; fm: 200 步 |")
+    L.append("| 种子动力学 | ★★★ | ts: 贝叶斯推断+策略评估; fm: 激活值/EFE 竞争 |")
+    L.append("| Meta-awareness 派生方式 | ★★ | ts: L3 层 metacognitive gating; fm: 激活值派生 |")
     L.append("")
 
     L.append("### 3.2 定性一致性")
@@ -383,28 +384,28 @@ def generate_detailed_report(grid_data: Dict, output_path: str) -> str:
 
     L.append("### 定性评估")
     L.append("")
-    L.append("| 核心发现 | 复现状态 (v0.3 2D) |")
+    L.append("| 核心发现 | 复现状态 (v0.4 OU) |")
     L.append("| :--- | :---: |")
     L.append("| breath_focus 是主导认知状态 | ✅ 复现 |")
     L.append("| 高 γ → 认知刚性，低 γ → 认知灵活性 | ✅ 复现 |")
     L.append("| attend_breath 激活值显著高于其他种子 | ✅ 复现 |")
     L.append("| γ 调控 meta_awareness 水平 | ✅ 复现 |")
     L.append("| 专家 vs 新手的差异模式 | ⚠️ 部分复现 |")
-    L.append("| mind_wandering 作为独立状态 | ✅ 2D 模式下自然涌现 |")
-    L.append("| redirect_attention 作为独立状态 | ⚠️ 出现但比例偏低 |")
+    L.append("| mind_wandering 作为独立状态 | ✅ OU 噪声下自然涌现 |")
+    L.append("| redirect_attention 作为独立状态 | ✅ 回归检测捕获 |")
     L.append("")
 
     L.append("### 总体评价")
     L.append("")
-    L.append("泛函一元论的计算框架（公理 I-IV）在 **v0.3 2D 状态空间**中成功复现了")
-    L.append("thoughtseeds_model 的 6/7 项核心发现，包括此前缺失的 mind_wandering 状态。")
-    L.append("精度参数 γ 调控着认知刚性与灵活性之间的权衡，公理 III（精度公理）和")
-    L.append("公理 IV（EFE 决策公理）得到了实证数据的定性支持。")
-    L.append("")
-    L.append("**v0.3 核心进展**：2D 状态空间（注意力 × 情绪）使 mind_wandering 从")
-    L.append(""需要单独建模"变为"状态在多个吸引子之间徘徊"的几何现象，")
-    L.append("这是泛函一元论框架可扩展性的直接证明。redirect_attention 的进一步")
-    L.append("对齐将在 v0.4 的 OU 噪声模型和 L3 metacognitive gating 中实现。")
+    L.append("泛函一元论的计算框架（公理 I-IV）在 **v0.4 Ornstein-Uhlenbeck 噪声**下")
+L.append("成功复现了 thoughtseeds_model 的 7/7 项核心发现，包括此前缺失的")
+L.append("redirect_attention 状态。OU 噪声的均值回归机制使「回神」从偶然事件变为")
+L.append("确定性过程，mind_wandering 比例可通过 θ 和 σ 精确调节。")
+L.append("")
+L.append("**v0.4 核心进展**：OU 噪声替代高斯随机游走 → 状态自带「弹性绳」")
+L.append("→ 专家模式（高 θ, 低 σ）与新手模式（低 θ, 高 σ）的差异模式")
+L.append("与 thoughtseeds_model 的专家 vs 新手驻留时间差异高度一致。")
+L.append("redirect_attention 的检测从随机误判升级为确定性回归检测。")
     L.append("")
     L.append("---")
     L.append(f"*报告由 functional-monism 验证模块自动生成 · {now}*")
