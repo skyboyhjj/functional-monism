@@ -1,7 +1,6 @@
 """冥想状态模拟器 — 基于泛函一元论的交互式意识竞争可视化。
 
-v0.4: Ornstein-Uhlenbeck 噪声驱动，mind_wandering 逼近 thoughtseeds_model 基准值，
-      引入 redirect_attention 检测与 OU 参数调节。
+v0.9: 微调 OU 参数，延长新手 mind_wandering 驻留时间。
 
 启动方式:
     streamlit run apps/meditation_dashboard.py
@@ -24,21 +23,24 @@ from collections import Counter
 
 from src.models.workspace import MeditationSeed, GlobalWorkspace, create_default_seeds
 from src.models.ou_noise import OUNoise
+from src.validation.comparator import run_multiple_simulations
+from src.validation.metrics import classify_state_with_buffer, compute_buffer_size
+from src.validation.report import generate_benchmark_report, THOUGHTSEEDS_BENCHMARK
 
 # ============================================================================
 # 页面配置
 # ============================================================================
 
 st.set_page_config(
-    page_title="冥想状态模拟器 v0.4",
+    page_title="冥想状态模拟器 v0.9",
     page_icon="🧘",
     layout="wide",
 )
 
-st.title("🧘 泛函一元论 · 冥想状态模拟器 v0.4")
+st.title("🧘 泛函一元论 · 冥想状态模拟器 v0.9")
 st.caption(
-    "v0.4 升级：Ornstein-Uhlenbeck 噪声驱动，带均值回归的状态动力学。"
-    "意识不再是'无头苍蝇'，而是'系着弹性绳的漫步者'。"
+    "v0.9 微调：降低新手模式 σ（0.35→0.28）和 θ（0.06→0.05），"
+    "延长 mind_wandering 连续驻留，减少碎片化。"
 )
 
 # ============================================================================
@@ -55,6 +57,20 @@ with st.sidebar:
         help="启用 2D 模式后，状态在 (注意力, 情绪) 平面上漂移，"
              "mind_wandering 可自然涌现。关闭则回退到 1D 标量模式。",
     )
+
+    st.divider()
+
+    st.markdown("### ⏱️ 模拟步数（v0.5 新增）")
+    steps = st.slider(
+        "模拟步数",
+        min_value=100,
+        max_value=5000,
+        value=2000,
+        step=100,
+        help="v0.5 默认 2000 步，与 thoughtseeds_model 评估窗口对齐。步数越多，驻留时间统计越准确。",
+    )
+
+    st.divider()
 
     global_gamma = st.slider(
         "全局精度 (γ)",
@@ -86,8 +102,8 @@ with st.sidebar:
     perturbation_time = st.slider(
         "杂念冲击时刻",
         min_value=0,
-        max_value=190,
-        value=80,
+        max_value=steps - 10,
+        value=min(80, steps - 10),
         step=10,
         help="杂念冲击发生的时间步。",
     )
@@ -140,6 +156,32 @@ with st.sidebar:
 
     st.divider()
 
+    st.markdown("### ⏳ 时域滤波（v0.8 自适应）")
+    st.caption("buffer_size = round(9/(γ+1) + σ×1.5)，范围 [2, 12]")
+
+    # v0.7: 自适应缓冲大小，从 γ 和 σ 动态计算
+    buffer_size = compute_buffer_size(global_gamma, sigma_ou)
+    st.metric(
+        label="当前自适应缓冲大小",
+        value=f"{buffer_size} 步",
+        delta=f"γ={global_gamma:.1f}, σ={sigma_ou:.2f}",
+    )
+    st.caption(
+        "buffer_size 由 γ 和 σ 自动决定，无需手动调整。"
+        "γ 越高 → 缓冲越短（灵敏切换）；σ 越大 → 缓冲越长（稳定判别）。"
+    )
+
+    breath_zone_radius = st.slider(
+        "呼吸区半径",
+        min_value=0.2,
+        max_value=2.0,
+        value=0.5,
+        step=0.1,
+        help="原点周围多大范围算'呼吸专注区'。专家模式建议 0.3~0.5，新手模式建议 0.5~1.0。",
+    )
+
+    st.divider()
+
     use_efe = st.checkbox(
         "EFE 竞争模式（预期自由能最小化）",
         value=False,
@@ -161,13 +203,30 @@ with st.sidebar:
     if "新手" in preset:
         global_gamma = 0.3
         anchor_breath = 1.0
-        theta = 0.06
-        sigma_ou = 0.35
+        theta = 0.05
+        sigma_ou = 0.28
     elif "专家" in preset:
         global_gamma = 3.0
         anchor_breath = 5.0
         theta = 0.25
         sigma_ou = 0.15
+
+    st.divider()
+
+    st.markdown("### 🔬 验证模式（v0.5 新增）")
+    validate_mode = st.checkbox(
+        "启用定量验证",
+        value=False,
+        help="启用后自动运行 20 次 × 2000 步模拟，"
+             "与 thoughtseeds_model 基准进行数值对比。",
+    )
+
+    if validate_mode:
+        validate_mode_type = st.selectbox(
+            "验证场景",
+            ["专家模式", "新手模式"],
+            help="选择与哪个 thoughtseeds_model 基准对比。",
+        )
 
     st.divider()
 
@@ -209,7 +268,6 @@ attractor_positions = {
 # 模拟：OU 噪声驱动
 # ============================================================================
 
-steps = 200
 np.random.seed(42)
 
 if use_2d:
@@ -245,77 +303,21 @@ for t in range(steps):
     dominant_history[t] = dominant.name
 
 # ============================================================================
-# v0.4 增强状态分类：基于吸引子距离 + 连续驻留 + 回归检测
+# v0.7 时域滤波分类：使用 classify_state_with_buffer（自适应缓冲）
 # ============================================================================
 
-def classify_state_v4(
-    state_vec: np.ndarray,
-    dominant_name: str,
-    attractors: dict,
-    prev_state_vec: np.ndarray = None,
-    threshold_near: float = 2.5,
-    threshold_far: float = 1.0,
-) -> str:
-    """基于吸引子距离 + 种子胜出 + 回归检测的 4 状态分类。
-
-    1. Pain Discomfort / Pending Tasks 胜出 → mind_wandering
-    2. 杂念种子吸引子附近 → mind_wandering
-    3. 远离原点后快速回归（回归系数 ≥ 40%） → redirect_attention
-    4. 元认知种子附近 → meta_awareness
-    5. 默认 → breath_focus
-
-    Args:
-        state_vec: 当前 2D 状态坐标。
-        dominant_name: 当前胜出种子名。
-        attractors: {name: np.ndarray} 吸引子坐标。
-        prev_state_vec: 上一步状态坐标（用于回归检测）。
-        threshold_near: 被视为"在吸引子附近"的距离阈值。
-        threshold_far: 被视为"远离原点"的距离阈值。
-    """
-    dist_to_origin = np.linalg.norm(state_vec)
-
-    # 1. 杂念种子胜出 → mind_wandering（无论距离）
-    if dominant_name in ("Pain Discomfort", "Pending Tasks"):
-        return "mind_wandering"
-
-    # 2. 杂念种子吸引子附近 → mind_wandering
-    dist_to_pain = np.linalg.norm(state_vec - attractors["Pain Discomfort"])
-    dist_to_tasks = np.linalg.norm(state_vec - attractors["Pending Tasks"])
-    if dist_to_pain < threshold_near or dist_to_tasks < threshold_near:
-        return "mind_wandering"
-
-    # 3. 远离原点后快速回归 → redirect_attention
-    #    条件：上一步远离原点 + 当前回归至原点附近 + 回归幅度 ≥ 40%
-    if prev_state_vec is not None:
-        prev_dist = np.linalg.norm(prev_state_vec)
-        threshold_return = threshold_near * 0.5  # 回神原点阈值 = 吸引子阈值的一半
-        if prev_dist > threshold_far and dist_to_origin < threshold_return:
-            # 回归系数：距离缩小了多少
-            regression_ratio = (prev_dist - dist_to_origin) / max(prev_dist, 1e-6)
-            if regression_ratio >= 0.40:
-                return "redirect_attention"
-
-    # 4. 元认知种子附近 → meta_awareness
-    dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
-    dist_to_equanimity = np.linalg.norm(state_vec - attractors["Equanimity"])
-    if dist_to_reflection < threshold_near or dist_to_equanimity < threshold_near:
-        return "meta_awareness"
-
-    # 5. 默认 → breath_focus
-    return "breath_focus"
-
-
-# 生成状态序列
+# 生成状态序列（v0.7：自适应缓冲，buffer_size 从 gamma/sigma 动态计算）
 state_sequence = []
 if use_2d:
-    for t in range(steps):
-        prev_sv = state_stream[t - 1] if t > 0 else None
-        sv = state_stream[t]
-        d = dominant_history[t]
-        med_state = classify_state_v4(
-            sv, d, attractor_positions, prev_state_vec=prev_sv
-        )
-        state_sequence.append(med_state)
+    state_sequence = classify_state_with_buffer(
+        state_stream=list(state_stream),
+        attractors=attractor_positions,
+        dominant_history=dominant_history,
+        gamma=global_gamma,
+        sigma=sigma_ou,
+        buffer_size=buffer_size,
+        breath_zone_radius=breath_zone_radius,
+    )
 else:
     STATE_MAP = {
         "Breath Focus": "breath_focus",
@@ -324,8 +326,7 @@ else:
         "Self Reflection": "meta_awareness",
         "Equanimity": "meta_awareness",
     }
-    for d in dominant_history:
-        state_sequence.append(STATE_MAP.get(d, "mind_wandering"))
+    state_sequence = [STATE_MAP.get(d, "mind_wandering") for d in dominant_history]
 
 # ============================================================================
 # 主区域：图表
@@ -493,6 +494,24 @@ if use_2d:
                 marker=dict(color="black", size=10, symbol="x"),
                 name="终点",
                 showlegend=True,
+            )
+        )
+
+        # v0.6: 呼吸区叠加（浅绿色半透明圆）
+        theta_circle = np.linspace(0, 2 * np.pi, 100)
+        cx = breath_zone_radius * np.cos(theta_circle)
+        cy = breath_zone_radius * np.sin(theta_circle)
+        scatter_fig.add_trace(
+            go.Scatter(
+                x=cx.tolist(),
+                y=cy.tolist(),
+                mode="lines",
+                fill="toself",
+                fillcolor="rgba(76, 175, 80, 0.12)",
+                line=dict(color="rgba(76, 175, 80, 0.4)", width=1, dash="dot"),
+                name=f"呼吸区 r={breath_zone_radius}",
+                showlegend=True,
+                hovertemplate=f"呼吸区 r={breath_zone_radius}",
             )
         )
 
@@ -683,21 +702,142 @@ else:
 # ============================================================================
 
 st.divider()
+
+# ============================================================================
+# v0.5 验证模式：定量对比
+# ============================================================================
+
+if validate_mode:
+    st.header("🔬 v0.5 定量验证报告")
+
+    # 根据验证场景选择参数
+    if "专家" in validate_mode_type:
+        v_gamma = 3.0
+        v_anchor = 3.0
+        v_theta = 0.25
+        v_sigma = 0.15
+        v_efe = False
+        mode_key = "expert"
+    else:
+        v_gamma = 0.3
+        v_anchor = 1.0
+        v_theta = 0.06
+        v_sigma = 0.35
+        v_efe = True
+        mode_key = "novice"
+
+    with st.spinner(f"正在运行 20 次 × 2000 步模拟（{validate_mode_type}）..."):
+        multi_results = run_multiple_simulations(
+            n_runs=20,
+            steps=2000,
+            gamma=v_gamma,
+            anchor=v_anchor,
+            theta=v_theta,
+            sigma_ou=v_sigma,
+            use_efe=v_efe,
+            threshold_near=threshold_near,
+            threshold_far=threshold_far,
+        )
+
+    benchmark = THOUGHTSEEDS_BENCHMARK.get(mode_key, {})
+
+    col_v1, col_v2 = st.columns(2)
+
+    with col_v1:
+        st.subheader("📊 状态分布 (mean ± std)")
+        freq = multi_results.get("state_frequencies", {})
+        for state in ["breath_focus", "mind_wandering", "meta_awareness", "redirect_attention"]:
+            if state in freq:
+                f = freq[state]
+                st.metric(
+                    label=state_labels.get(state, state),
+                    value=f"{f['mean']:.1f}%",
+                    delta=f"±{f['std']:.1f}%",
+                )
+
+    with col_v2:
+        st.subheader("⏱️ 平均驻留时间 (mean ± std)")
+        dwell = multi_results.get("dwell_times", {})
+        for state in ["breath_focus", "mind_wandering", "meta_awareness", "redirect_attention"]:
+            if state in dwell:
+                d = dwell[state]
+                st.metric(
+                    label=state_labels.get(state, state),
+                    value=f"{d['mean_dwell']:.1f} 步",
+                    delta=f"±{d['std_dwell']:.1f} 步",
+                )
+
+    st.divider()
+
+    # 基准对比表
+    st.subheader("🎯 thoughtseeds_model 基准对比")
+    report = generate_benchmark_report(multi_results, mode=mode_key)
+    st.markdown(report)
+
+    # 误差条图
+    st.subheader("📉 驻留时间误差条图")
+    error_fig = go.Figure()
+
+    dwell_states = []
+    dwell_means = []
+    dwell_stds = []
+    for state in ["breath_focus", "mind_wandering", "meta_awareness", "redirect_attention"]:
+        if state in dwell:
+            dwell_states.append(state_labels.get(state, state))
+            dwell_means.append(dwell[state]["mean_dwell"])
+            dwell_stds.append(dwell[state]["std_dwell"])
+
+    if dwell_states:
+        error_fig.add_trace(
+            go.Bar(
+                x=dwell_states,
+                y=dwell_means,
+                error_y=dict(type="data", array=dwell_stds, visible=True),
+                marker_color=["#4CAF50", "#FF5722", "#9C27B0", "#2196F3"][:len(dwell_states)],
+                name="functional-monism",
+            )
+        )
+
+        # 添加基准线
+        if mode_key == "expert" and "breath_focus_dwell" in benchmark:
+            error_fig.add_hline(
+                y=benchmark["breath_focus_dwell"],
+                line_dash="dash",
+                line_color="green",
+                annotation_text=f"ts 基准: {benchmark['breath_focus_dwell']} 步",
+            )
+        elif mode_key == "novice" and "mind_wandering_dwell" in benchmark:
+            error_fig.add_hline(
+                y=benchmark["mind_wandering_dwell"],
+                line_dash="dash",
+                line_color="orange",
+                annotation_text=f"ts 基准: {benchmark['mind_wandering_dwell']} 步",
+            )
+
+        error_fig.update_layout(
+            height=400,
+            yaxis_title="平均驻留时间（步）",
+            showlegend=False,
+        )
+        st.plotly_chart(error_fig, use_container_width=True)
+
+st.divider()
 st.markdown(
-    "**v0.4 使用指南**：\n"
+    "**v0.7 使用指南**：\n"
+    "- **自适应缓冲**：buffer_size = round(10/(γ+1) + σ×2)，高精度→短缓冲（灵敏切换），低精度→长缓冲（稳定驻留）\n"
+    "- **时代滤波**：状态必须连续 N 步满足条件才触发切换，消除瞬时几何分类的碎片化\n"
+    "- **呼吸区**：2D 散点图中浅绿色半透明圆，半径 = 呼吸区半径，状态在此区域内连续驻留 → breath_focus\n"
     "- **OU 噪声**：状态遵循 Ornstein-Uhlenbeck 过程，具有向原点回归的内置倾向\n"
     "- **θ（回归速度）**：越高 → 回神越快 → 专家模式；越低 → 容易走神 → 新手模式\n"
-    "- **σ（波动幅度）**：越高 → 走神越剧烈 → 新手模式；越低 → 状态越稳定\n"
-    "- **2D 散点图**：按冥想状态着色（绿=专注, 橙=走神, 紫=元觉察, 蓝=回神）\n"
-    "- **原点 μ**：OU 均值回归目标，标记为黑色十字 ✚\n"
-    "- **redirect_attention 检测**：远离原点后回归 ≥ 40% 且回到原点附近才触发\n\n"
-    "**v0.4 默认参数**：γ=0.5, θ=0.10, σ=0.35, near=2.5, far=1.0\n"
+    "- **模拟步数**：默认 2000 步，与 thoughtseeds_model 评估窗口对齐\n"
+    "- **验证模式**：启用后自动运行 20 次 × 2000 步，输出 mean ± std 和基准对比\n\n"
+    "**v0.9 默认参数**：γ=0.5, θ=0.10, σ=0.35, buffer=自适应, breath_zone=0.5, mw_zone=1.8\n"
+    "**v0.9 新手模式**：γ=0.3, θ=0.05, σ=0.28, EFE=开  (驻留目标 55-65 步)\n"
     "**理论对应**：\n"
     "- 公理 I（存在）：每个种子 = 一个泛函 F[ψ]，定义在 2D 状态空间上\n"
     "- 公理 II（演化）：dx = θ(μ − x)dt + σ · dW — 均值回归 + 扩散\n"
-    "- 公理 III（精度）：γ 作为曲率参数，控制激活函数的陡峭度\n"
+    "- 公理 III（精度）：γ 作为曲率参数，控制激活函数的陡峭度 和 缓冲时间窗口\n"
     "- 公理 IV（决策）：G = γ·‖Δ‖² + ln(γ)，在精度与复杂度之间权衡\n\n"
-    "**v0.4 新增**：OU 噪声驱动 → 状态自带'弹性绳' → mind_wandering 比例"
-    "逼近 thoughtseeds_model 基准值（新手 40-55%，专家 20-30%），"
-    "redirect_attention 从状态回归中自然涌现。"
+    "**v0.9 微调**：降低 σ（0.35→0.28）减少高频振荡，降低 θ（0.06→0.05）减弱回归力。"
+    "让状态在杂念吸引域内更平滑地停留，延长 mind_wandering 连续驻留。"
 )

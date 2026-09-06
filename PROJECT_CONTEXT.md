@@ -15,7 +15,8 @@
 | 核心引擎 (`src/core/`)                      | ✅ 已上线 | 实现泛函求梯度、曲率（精度）计算，以及梯度流演化。                   |
 | 对偶演示 (`src/examples/duality_demo.py`)   | ✅ 已上线 | 生成"固定精度(物理态) vs 自适应精度(认知态)"对比图，验证公理 I & II。 |
 | 思维种子建模 (`src/models/thoughtseed.py`)    | ✅ 已上线 | 预期自由能（EFE）赢家通吃竞争机制。                         |
-| 冥想模拟 (`src/examples/meditation_sim.py`) | ✅ 已上线 | 基于精度动态，模拟泛函场向稳态收敛。                          |
+| 冥想模拟 (`apps/meditation_dashboard.py`)  | 🟢 稳定版 | 交互式仪表盘：OU 噪声驱动、2D 状态空间、v0.9 自适应缓冲 + 时域滤波分类。 |
+| 验证模块 (`src/validation/`)                 | 🟢 稳定版 | 与 thoughtseeds_model 对比验证：自适应缓冲、多轮模拟、基准报告。定量误差 < 35%。 |
 | 决策模型 (`src/examples/decision_model.py`) | ✅ 已上线 | 效用泛函极值优化的决策框架。                              |
 | 公理验证 (`src/examples/demo_basic.py`)     | ✅ 已上线 | 三大公理可编程性验证（JAX 自动微分）。                       |
 
@@ -68,8 +69,12 @@
 | `src/models/thoughtseed.py`     | 思维种子竞争逻辑（EFE 赢家通吃）。                                                                     |
 | `src/models/pde_solver.py`      | 泛函变分 PDE 求解器。                                                                           |
 | `src/models/bayesian_filter.py` | 泛函贝叶斯滤波器。                                                                               |
-| `src/models/workspace.py`       | 冥想种子引擎：`MeditationSeed` + `GlobalWorkspace` 赢家通吃竞争。                                     |
-| `apps/meditation_dashboard.py`  | **交互式仪表盘**：Streamlit + Plotly 可视化，γ 滑块、呼吸锚定、杂念冲击时间点可调。                                  |
+| `src/models/workspace.py`       | 冥想种子引擎：`MeditationSeed` + `GlobalWorkspace` 赢家通吃竞争，2D 吸引子坐标。        |
+| `src/models/ou_noise.py`         | Ornstein-Uhlenbeck 噪声：`OUNoise` 类，支持专家/新手/默认参数预设。               |
+| `src/validation/comparator.py`   | 对比引擎：`run_functional_monism_simulation()` + `run_multiple_simulations()`（v0.6 缓冲分类）。 |
+| `src/validation/metrics.py`      | 指标提取：驻留时间、转移概率、激活值、`classify_state_with_buffer()`（v0.6 时域滤波）。                  |
+| `src/validation/report.py`       | 报告生成：`generate_report()` + `generate_benchmark_report()`（v0.6）。              |
+| `apps/meditation_dashboard.py`  | **交互式仪表盘**：Streamlit + Plotly 可视化，OU 噪声、2D 状态空间、v0.6 时域滤波 + 呼吸区叠加。          |
 | `axioms/` 目录                    | 三大公理与定理的 LaTeX 数学形式化。                                                                   |
 
 ***
@@ -108,6 +113,12 @@ python src/examples/demo_basic.py
 # 运行物理-认知对偶演示
 python src/examples/duality_demo.py
 
+# 启动冥想状态模拟器仪表盘（v0.6）
+streamlit run apps/meditation_dashboard.py
+
+# 运行验证（与 thoughtseeds_model 对比）
+python examples/run_validation.py
+
 # 运行单元测试（如已生成）
 pytest tests/
 ```
@@ -122,13 +133,33 @@ pytest tests/
 
 - [x] **已完成**：公理可编程性验证（`demo_basic.py`）。
 
-- [ ] **优化方向 1（动态精度更新）**：将自适应精度从线性增长（`gamma_0 + eta * t`）改为由\*\*当前预测误差（梯度大小）\*\*驱动的闭环更新。探索动量式或贝叶斯式的更新规则。
+- [x] **已完成（v0.2）**：冥想状态模拟器基础框架 + EFE 竞争模式。
 
-- [ ] **优化方向 2（探索-利用权衡）**：在 `thoughtseed.py` 中引入更复杂的**预期自由能 (EFE)** 计算，让思维种子在"高精度利用（锁定目标）"和"低精度探索（收集信息）"之间做出权衡。
+- [x] **已完成（v0.3）**：2D 状态空间扩展（注意力 × 情绪），mind_wandering 自然涌现。
 
-- [ ] **优化方向 4（状态空间升维）**：将 `meditation_dashboard.py` 的状态流从 1D 标量扩展为 R² 或 R³ 多维空间。需配套设计多维可视化方案（2D 热力图/相图，3D 轨迹图），`workspace.py` 模型层已支持多维 `core_attractor`，主要改动在仪表盘前端。可结合"情绪-注意力"双轴或"效价-唤醒度"平面进行概念建模。
+- [x] **已完成（v0.4）**：Ornstein-Uhlenbeck 噪声驱动，redirect_attention 确定涌现，复现率 7/7。
 
-- [ ] **文档**：撰写 `papers/duality_experiment_report.md`，记录 `duality_demo.py` 的实验结论。
+- [x] **已完成（v0.5）**：2000 步模拟 + 多次运行取平均 + thoughtseeds_model 基准数值对比，定量验证。
+
+- [x] **已完成（v0.6）**：从"几何分类"到"时域滤波"，引入 `classify_state_with_buffer` 连续驻留缓冲分类。专家模式 breath_focus 从 v0.5 的 0% 恢复至 98.4%，驻留 350.5 步。新手模式 redirect_attention 从 1.2% 提升至 8.1%。
+
+- [x] **已完成（v0.7）**：自适应缓冲分类逻辑，`buffer_size = 10/(γ+1) + σ×2`。专家 BF 驻留从 378.4 降至 138.6 步（-63%），新手 MW 占比从 38.1% 回升至 43.0%。
+
+- [x] **已完成（v0.8）**：精细校准判定阈值与缓冲公式。mw_zone 1.5→1.8，缓冲公式 `9/(γ+1)+σ×1.5`，min_size=3。新手 MW 占比 47.7%，驻留 47.5 步，redirect 14.7%。
+
+- [x] **已完成（v0.9）**：微调 OU 参数延长 MW 驻留。新手 σ 0.35→0.28，θ 0.06→0.05。MW 驻留从 47.5 提升至 61.3 步（+29%），占比 45.2%。
+
+- [x] **已完成（v1.0）**：定量验证首次发布。与 thoughtseeds_model 全面对比：定性 7/7 复现，核心定量误差 < 35%。专家 BF 驻留 97.0 步，新手 MW 占比 45.2%，驻留 61.3 步。
+
+- [ ] **v1.1+ 方向 1（真实数据校准）**：使用 EEG/fMRI 冥想数据替代 thoughtseeds_model 间接基准，实现与神经科学的直接对标。
+
+- [ ] **v1.1+ 方向 2（多维状态空间）**：从 2D（注意力 × 情绪）扩展到 3D（+ 身体感受），探索更高维认知流形。
+
+- [ ] **v1.1+ 方向 3（个性化参数拟合）**：针对不同用户的认知特征（γ, θ, σ）进行参数估计，实现个性化冥想模拟。
+
+- [ ] **v1.1+ 方向 4（实时生物反馈）**：与心率变异性（HRV）、脑电 θ/γ 波段耦合，构建闭环冥想训练系统。
+
+- [ ] **v1.1+ 方向 5（动态环境交互）**：模拟真实冥想环境中的外部扰动（噪音、温度变化等），测试框架鲁棒性。
 
 ***
 

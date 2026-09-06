@@ -116,8 +116,8 @@ class OUNoise:
 
     @staticmethod
     def novice_params() -> dict:
-        """新手模式推荐参数：低回归速度 + 高波动。"""
-        return {"theta": 0.08, "sigma": 0.30}
+        """v0.9 微调：降低 sigma 和 theta 以延长 mind_wandering 驻留。"""
+        return {"theta": 0.05, "sigma": 0.28}
 
     @staticmethod
     def default_params() -> dict:

@@ -1,6 +1,7 @@
 """对比引擎：运行 functional-monism 模拟，与 thoughtseeds_model 数据对比。
 
 v0.4: 集成 Ornstein-Uhlenbeck 噪声，支持 theta/sigma 参数扫描。
+v0.5: 支持多次运行取平均 (run_multiple_simulations)，消除随机性噪声。
 """
 
 import sys
@@ -20,7 +21,7 @@ from src.models.workspace import (
 )
 from src.models.ou_noise import OUNoise
 from .data_loader import THOUGHTSEED_NAMES, MEDITATION_STATES
-from .metrics import extract_all_metrics
+from .metrics import extract_all_metrics, calculate_dwell_times, classify_state_with_buffer
 
 
 def run_functional_monism_simulation(
@@ -35,10 +36,15 @@ def run_functional_monism_simulation(
     dim: int = 2,
     theta: float = 0.15,
     sigma_ou: float = 0.20,
+    buffer_size: int = 5,
+    breath_zone_radius: float = 0.5,
+    mw_zone_radius: float = 1.8,
+    meta_zone_radius: float = 1.5,
 ) -> Dict[str, object]:
     """运行 functional-monism 冥想模拟。
 
     v0.4: 使用 Ornstein-Uhlenbeck 噪声驱动状态，支持 theta/sigma 参数调节。
+    v0.6: 使用 classify_state_with_buffer 进行时域滤波分类。
 
     状态映射（1D 和 2D 通用）：
         Breath Focus    → breath_focus
@@ -46,9 +52,6 @@ def run_functional_monism_simulation(
         Pending Tasks   → mind_wandering
         Self Reflection → meta_awareness
         Equanimity      → meta_awareness
-
-    v0.4 增强分类（2D 模式）：
-        基于吸引子距离 + 连续驻留 + 回归检测，自动识别 redirect_attention。
 
     Args:
         gamma: 全局精度。
@@ -62,6 +65,10 @@ def run_functional_monism_simulation(
         dim: 状态空间维度。
         theta: OU 回归速度（v0.4 新增）。
         sigma_ou: OU 波动幅度（v0.4 新增）。
+        buffer_size: 连续驻留窗口大小（v0.6 新增）。
+        breath_zone_radius: 呼吸区半径（v0.6 新增）。
+        mw_zone_radius: 杂念区半径（v0.6 新增）。
+        meta_zone_radius: 元认知区半径（v0.6 新增）。
 
     Returns:
         dict: 包含状态序列、激活值历史、meta_awareness 等。
@@ -111,22 +118,6 @@ def run_functional_monism_simulation(
 
         dominant_history.append(dominant.name)
 
-        # v0.4 增强状态分类
-        if use_2d:
-            prev_sv = state_stream[t - 1] if t > 0 else None
-            sv = state_stream[t]
-            med_state = _classify_state_v4(sv, dominant.name, attractors, prev_sv)
-        else:
-            STATE_MAP = {
-                "Breath Focus": "breath_focus",
-                "Pain Discomfort": "mind_wandering",
-                "Pending Tasks": "mind_wandering",
-                "Self Reflection": "meta_awareness",
-                "Equanimity": "meta_awareness",
-            }
-            med_state = STATE_MAP.get(dominant.name, "mind_wandering")
-        state_history.append(med_state)
-
         # 激活值
         act_list = [
             activations.get("Breath Focus", 0.0),
@@ -146,6 +137,29 @@ def run_functional_monism_simulation(
             ma = float(np.clip(dominant.activation * 0.3, 0.0, 1.0))
         meta_awareness_history.append(ma)
 
+    # v0.7: 使用缓冲分类（时域滤波），buffer_size 从 gamma/sigma 自适应计算
+    if use_2d:
+        state_history = classify_state_with_buffer(
+            state_stream=list(state_stream),
+            attractors=attractors,
+            dominant_history=dominant_history,
+            gamma=gamma,
+            sigma=sigma_ou,
+            buffer_size=buffer_size,
+            breath_zone_radius=breath_zone_radius,
+            mw_zone_radius=mw_zone_radius,
+            meta_zone_radius=meta_zone_radius,
+        )
+    else:
+        STATE_MAP = {
+            "Breath Focus": "breath_focus",
+            "Pain Discomfort": "mind_wandering",
+            "Pending Tasks": "mind_wandering",
+            "Self Reflection": "meta_awareness",
+            "Equanimity": "meta_awareness",
+        }
+        state_history = [STATE_MAP.get(d, "mind_wandering") for d in dominant_history]
+
     return {
         "states": state_history,
         "activations": activation_history,
@@ -161,6 +175,8 @@ def run_functional_monism_simulation(
             "use_2d": use_2d,
             "theta": theta,
             "sigma_ou": sigma_ou,
+            "buffer_size": buffer_size,
+            "breath_zone_radius": breath_zone_radius,
         },
     }
 
@@ -390,3 +406,124 @@ def scan_ou_parameters(
                 "redirect_attention_pct": counts.get("redirect_attention", 0) / total * 100,
             })
     return results
+
+
+def run_multiple_simulations(
+    n_runs: int = 20,
+    steps: int = 2000,
+    gamma: float = 0.5,
+    anchor: float = 1.0,
+    theta: float = 0.10,
+    sigma_ou: float = 0.35,
+    use_efe: bool = False,
+    use_2d: bool = True,
+    threshold_near: float = 2.5,
+    threshold_far: float = 1.0,
+    buffer_size: int = None,
+    breath_zone_radius: float = 0.5,
+    mw_zone_radius: float = 1.8,
+    meta_zone_radius: float = 1.5,
+) -> Dict[str, object]:
+    """v0.5: 运行多次模拟，返回各指标的 mean ± std。
+    v0.7: buffer_size 默认为 None，启用自适应缓冲（从 gamma/sigma 动态计算）。
+
+    Args:
+        n_runs: 运行次数（推荐 20-30）。
+        steps: 每轮模拟步数（推荐 2000）。
+        gamma: 全局精度。
+        anchor: 呼吸锚定强度。
+        theta: OU 回归速度。
+        sigma_ou: OU 波动幅度。
+        use_efe: 是否使用 EFE 模式。
+        use_2d: 是否使用 2D 状态空间。
+        threshold_near: 吸引子附近阈值（v0.6 保留兼容）。
+        threshold_far: 远离原点阈值（v0.6 保留兼容）。
+        buffer_size: 连续驻留窗口大小（v0.6 新增）。
+        breath_zone_radius: 呼吸区半径（v0.6 新增）。
+        mw_zone_radius: 杂念区半径（v0.6 新增）。
+        meta_zone_radius: 元认知区半径（v0.6 新增）。
+
+    Returns:
+        dict: 包含各指标的 mean/std，以及驻留时间分布统计。
+    """
+    all_state_sequences = []
+    all_state_freqs = []
+    all_dwell_stats = []
+
+    for run_i in range(n_runs):
+        res = run_functional_monism_simulation(
+            gamma=gamma,
+            anchor=anchor,
+            steps=steps,
+            use_2d=use_2d,
+            theta=theta,
+            sigma_ou=sigma_ou,
+            use_efe=use_efe,
+            seed=42 + run_i * 137,
+            buffer_size=buffer_size,
+            breath_zone_radius=breath_zone_radius,
+            mw_zone_radius=mw_zone_radius,
+            meta_zone_radius=meta_zone_radius,
+        )
+
+        states = res["states"]
+        all_state_sequences.append(states)
+
+        # 状态频率
+        total = len(states)
+        freqs = {}
+        for s in states:
+            freqs[s] = freqs.get(s, 0) + 1
+        for s in freqs:
+            freqs[s] = freqs[s] / total * 100
+        all_state_freqs.append(freqs)
+
+        # 驻留时间分布
+        dwell = calculate_dwell_times(states)
+        all_dwell_stats.append(dwell)
+
+    # 聚合状态频率
+    all_states_set = set()
+    for f in all_state_freqs:
+        all_states_set.update(f.keys())
+
+    freq_summary = {}
+    for state in all_states_set:
+        vals = [f.get(state, 0.0) for f in all_state_freqs]
+        freq_summary[state] = {
+            "mean": float(np.mean(vals)),
+            "std": float(np.std(vals)),
+        }
+
+    # 聚合驻留时间
+    all_med_states = set()
+    for d in all_dwell_stats:
+        all_med_states.update(d.keys())
+
+    dwell_summary = {}
+    for state in all_med_states:
+        means = [d[state]["mean"] for d in all_dwell_stats if state in d]
+        maxs = [d[state]["max"] for d in all_dwell_stats if state in d]
+        dwell_summary[state] = {
+            "mean_dwell": float(np.mean(means)),
+            "std_dwell": float(np.std(means)),
+            "max_dwell_mean": float(np.mean(maxs)),
+            "max_dwell_std": float(np.std(maxs)),
+            "n_runs_with_state": len(means),
+        }
+
+    return {
+        "config": {
+            "n_runs": n_runs,
+            "steps": steps,
+            "gamma": gamma,
+            "anchor": anchor,
+            "theta": theta,
+            "sigma_ou": sigma_ou,
+            "use_efe": use_efe,
+            "threshold_near": threshold_near,
+            "threshold_far": threshold_far,
+        },
+        "state_frequencies": freq_summary,
+        "dwell_times": dwell_summary,
+    }
