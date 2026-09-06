@@ -60,9 +60,9 @@ with st.sidebar:
         "全局精度 (γ)",
         min_value=0.1,
         max_value=5.0,
-        value=1.0,
+        value=0.5,
         step=0.1,
-        help="精度越高，认知越'刚性'，种子越容易被锁定。",
+        help="精度越高，认知越'刚性'，种子越容易被锁定。v0.4 默认 0.5 以促进走神。",
     )
 
     anchor_breath = st.slider(
@@ -101,16 +101,16 @@ with st.sidebar:
         "回归速度 (θ)",
         min_value=0.02,
         max_value=0.50,
-        value=0.15,
+        value=0.10,
         step=0.01,
-        help="θ 越大 → 状态越快回归原点（breath_focus）。专家模式建议 0.20~0.30，新手模式建议 0.05~0.10。",
+        help="θ 越大 → 状态越快回归原点（breath_focus）。v0.4 默认 0.10 平衡走神与回神。专家建议 0.20~0.30，新手建议 0.05~0.10。",
     )
 
     sigma_ou = st.slider(
         "波动幅度 (σ)",
         min_value=0.05,
         max_value=0.50,
-        value=0.20,
+        value=0.35,
         step=0.01,
         help="σ 越大 → 走神越剧烈。新手模式建议 0.25~0.35，专家模式建议 0.10~0.20。",
     )
@@ -124,18 +124,18 @@ with st.sidebar:
         "吸引子附近阈值",
         min_value=0.5,
         max_value=4.0,
-        value=2.0,
+        value=2.5,
         step=0.1,
-        help="状态距离吸引子多远算'在附近'。值越大 → 越容易触发 mind_wandering。",
+        help="状态距离吸引子多远算'在附近'。值越大 → 越容易触发 mind_wandering。v0.4 默认 2.5。",
     )
 
     threshold_far = st.slider(
         "远离原点阈值",
         min_value=0.5,
         max_value=3.0,
-        value=1.2,
+        value=1.0,
         step=0.1,
-        help="状态距离原点多远算'远离'，用于触发 redirect_attention。值越小 → 越容易检测回神。",
+        help="状态距离原点多远算'远离'，用于触发 redirect_attention。值越小 → 越容易检测回神。v0.4 默认 1.0。",
     )
 
     st.divider()
@@ -161,8 +161,8 @@ with st.sidebar:
     if "新手" in preset:
         global_gamma = 0.3
         anchor_breath = 1.0
-        theta = 0.08
-        sigma_ou = 0.30
+        theta = 0.06
+        sigma_ou = 0.35
     elif "专家" in preset:
         global_gamma = 3.0
         anchor_breath = 5.0
@@ -253,14 +253,14 @@ def classify_state_v4(
     dominant_name: str,
     attractors: dict,
     prev_state_vec: np.ndarray = None,
-    threshold_near: float = 2.0,
-    threshold_far: float = 1.2,
+    threshold_near: float = 2.5,
+    threshold_far: float = 1.0,
 ) -> str:
     """基于吸引子距离 + 种子胜出 + 回归检测的 4 状态分类。
 
     1. Pain Discomfort / Pending Tasks 胜出 → mind_wandering
     2. 杂念种子吸引子附近 → mind_wandering
-    3. 远离原点后快速回归 → redirect_attention
+    3. 远离原点后快速回归（回归系数 ≥ 40%） → redirect_attention
     4. 元认知种子附近 → meta_awareness
     5. 默认 → breath_focus
 
@@ -284,11 +284,16 @@ def classify_state_v4(
     if dist_to_pain < threshold_near or dist_to_tasks < threshold_near:
         return "mind_wandering"
 
-    # 3. 远离原点后回归 → redirect_attention
+    # 3. 远离原点后快速回归 → redirect_attention
+    #    条件：上一步远离原点 + 当前回归至原点附近 + 回归幅度 ≥ 40%
     if prev_state_vec is not None:
         prev_dist = np.linalg.norm(prev_state_vec)
-        if prev_dist > threshold_far and dist_to_origin < threshold_near:
-            return "redirect_attention"
+        threshold_return = threshold_near * 0.5  # 回神原点阈值 = 吸引子阈值的一半
+        if prev_dist > threshold_far and dist_to_origin < threshold_return:
+            # 回归系数：距离缩小了多少
+            regression_ratio = (prev_dist - dist_to_origin) / max(prev_dist, 1e-6)
+            if regression_ratio >= 0.40:
+                return "redirect_attention"
 
     # 4. 元认知种子附近 → meta_awareness
     dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
@@ -684,7 +689,9 @@ st.markdown(
     "- **θ（回归速度）**：越高 → 回神越快 → 专家模式；越低 → 容易走神 → 新手模式\n"
     "- **σ（波动幅度）**：越高 → 走神越剧烈 → 新手模式；越低 → 状态越稳定\n"
     "- **2D 散点图**：按冥想状态着色（绿=专注, 橙=走神, 紫=元觉察, 蓝=回神）\n"
-    "- **原点 μ**：OU 均值回归目标，标记为黑色十字 ✚\n\n"
+    "- **原点 μ**：OU 均值回归目标，标记为黑色十字 ✚\n"
+    "- **redirect_attention 检测**：远离原点后回归 ≥ 40% 且回到原点附近才触发\n\n"
+    "**v0.4 默认参数**：γ=0.5, θ=0.10, σ=0.35, near=2.5, far=1.0\n"
     "**理论对应**：\n"
     "- 公理 I（存在）：每个种子 = 一个泛函 F[ψ]，定义在 2D 状态空间上\n"
     "- 公理 II（演化）：dx = θ(μ − x)dt + σ · dW — 均值回归 + 扩散\n"

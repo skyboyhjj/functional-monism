@@ -170,14 +170,14 @@ def _classify_state_v4(
     dominant_name: str,
     attractors: dict,
     prev_state_vec: np.ndarray = None,
-    threshold_near: float = 2.0,
-    threshold_far: float = 1.2,
+    threshold_near: float = 2.5,
+    threshold_far: float = 1.0,
 ) -> str:
     """v0.4 增强状态分类：基于吸引子距离 + 种子胜出 + 回归检测。
 
     1. 杂念种子胜出 → mind_wandering
     2. 杂念种子吸引子附近 → mind_wandering
-    3. 远离原点后回归 → redirect_attention
+    3. 远离原点后快速回归（回归系数 ≥ 40%） → redirect_attention
     4. 元认知种子附近 → meta_awareness
     5. 默认 → breath_focus
     """
@@ -192,10 +192,14 @@ def _classify_state_v4(
     if dist_to_pain < threshold_near or dist_to_tasks < threshold_near:
         return "mind_wandering"
 
+    # 3. 远离原点后快速回归 → redirect_attention
     if prev_state_vec is not None:
         prev_dist = np.linalg.norm(prev_state_vec)
-        if prev_dist > threshold_far and dist_to_origin < threshold_near:
-            return "redirect_attention"
+        threshold_return = threshold_near * 0.5
+        if prev_dist > threshold_far and dist_to_origin < threshold_return:
+            regression_ratio = (prev_dist - dist_to_origin) / max(prev_dist, 1e-6)
+            if regression_ratio >= 0.40:
+                return "redirect_attention"
 
     dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
     dist_to_equanimity = np.linalg.norm(state_vec - attractors["Equanimity"])
