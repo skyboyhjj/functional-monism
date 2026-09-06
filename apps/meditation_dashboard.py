@@ -669,7 +669,7 @@ st.markdown(
     "- 公理 II（演化）：dx = θ(μ − x)dt + σ · dW — 均值回归 + 扩散\n"
     "- 公理 III（精度）：γ 作为曲率参数，控制激活函数的陡峭度\n"
     "- 公理 IV（决策）：G = γ·‖Δ‖² + ln(γ)，在精度与复杂度之间权衡\n\n"
-    "**v0.4 新增**：OU 噪声驱动 → 状态自带"弹性绳" → mind_wandering 比例"
+    "**v0.4 新增**：OU 噪声驱动 → 状态自带'弹性绳' → mind_wandering 比例"
     "逼近 thoughtseeds_model 基准值（新手 40-55%，专家 20-30%），"
     "redirect_attention 从状态回归中自然涌现。"
 )
