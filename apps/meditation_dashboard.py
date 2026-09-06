@@ -117,6 +117,29 @@ with st.sidebar:
 
     st.divider()
 
+    st.markdown("### 🎯 状态分类阈值（v0.4 新增）")
+    st.caption("调整阈值以控制状态分类的敏感度")
+
+    threshold_near = st.slider(
+        "吸引子附近阈值",
+        min_value=0.5,
+        max_value=4.0,
+        value=2.0,
+        step=0.1,
+        help="状态距离吸引子多远算'在附近'。值越大 → 越容易触发 mind_wandering。",
+    )
+
+    threshold_far = st.slider(
+        "远离原点阈值",
+        min_value=0.5,
+        max_value=3.0,
+        value=1.2,
+        step=0.1,
+        help="状态距离原点多远算'远离'，用于触发 redirect_attention。值越小 → 越容易检测回神。",
+    )
+
+    st.divider()
+
     use_efe = st.checkbox(
         "EFE 竞争模式（预期自由能最小化）",
         value=False,
@@ -230,15 +253,16 @@ def classify_state_v4(
     dominant_name: str,
     attractors: dict,
     prev_state_vec: np.ndarray = None,
-    threshold_near: float = 1.5,
-    threshold_far: float = 2.0,
+    threshold_near: float = 2.0,
+    threshold_far: float = 1.2,
 ) -> str:
-    """基于吸引子距离和回归检测的 4 状态分类。
+    """基于吸引子距离 + 种子胜出 + 回归检测的 4 状态分类。
 
-    1. 杂念种子附近 → mind_wandering
-    2. 远离原点后快速回拉 → redirect_attention
-    3. 元认知种子附近 → meta_awareness
-    4. 默认 → breath_focus
+    1. Pain Discomfort / Pending Tasks 胜出 → mind_wandering
+    2. 杂念种子吸引子附近 → mind_wandering
+    3. 远离原点后快速回归 → redirect_attention
+    4. 元认知种子附近 → meta_awareness
+    5. 默认 → breath_focus
 
     Args:
         state_vec: 当前 2D 状态坐标。
@@ -247,35 +271,32 @@ def classify_state_v4(
         prev_state_vec: 上一步状态坐标（用于回归检测）。
         threshold_near: 被视为"在吸引子附近"的距离阈值。
         threshold_far: 被视为"远离原点"的距离阈值。
-
-    Returns:
-        str: 冥想状态 (breath_focus | mind_wandering | meta_awareness | redirect_attention)。
     """
     dist_to_origin = np.linalg.norm(state_vec)
 
-    # 1. 杂念种子吸引子附近 → mind_wandering
+    # 1. 杂念种子胜出 → mind_wandering（无论距离）
+    if dominant_name in ("Pain Discomfort", "Pending Tasks"):
+        return "mind_wandering"
+
+    # 2. 杂念种子吸引子附近 → mind_wandering
     dist_to_pain = np.linalg.norm(state_vec - attractors["Pain Discomfort"])
     dist_to_tasks = np.linalg.norm(state_vec - attractors["Pending Tasks"])
     if dist_to_pain < threshold_near or dist_to_tasks < threshold_near:
         return "mind_wandering"
 
-    # 2. 远离原点后快速回拉 → redirect_attention
+    # 3. 远离原点后回归 → redirect_attention
     if prev_state_vec is not None:
         prev_dist = np.linalg.norm(prev_state_vec)
-        if (
-            prev_dist > threshold_far
-            and dist_to_origin < threshold_near
-            and dist_to_origin < prev_dist * 0.6
-        ):
+        if prev_dist > threshold_far and dist_to_origin < threshold_near:
             return "redirect_attention"
 
-    # 3. 元认知种子附近 → meta_awareness
+    # 4. 元认知种子附近 → meta_awareness
     dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
     dist_to_equanimity = np.linalg.norm(state_vec - attractors["Equanimity"])
     if dist_to_reflection < threshold_near or dist_to_equanimity < threshold_near:
         return "meta_awareness"
 
-    # 4. 默认 → breath_focus
+    # 5. 默认 → breath_focus
     return "breath_focus"
 
 

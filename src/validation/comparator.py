@@ -170,17 +170,22 @@ def _classify_state_v4(
     dominant_name: str,
     attractors: dict,
     prev_state_vec: np.ndarray = None,
-    threshold_near: float = 1.5,
-    threshold_far: float = 2.0,
+    threshold_near: float = 2.0,
+    threshold_far: float = 1.2,
 ) -> str:
-    """v0.4 增强状态分类：基于吸引子距离 + 连续驻留 + 回归检测。
+    """v0.4 增强状态分类：基于吸引子距离 + 种子胜出 + 回归检测。
 
-    1. 杂念种子附近 → mind_wandering
-    2. 远离原点后快速回拉 → redirect_attention
-    3. 元认知种子附近 → meta_awareness
-    4. 默认 → breath_focus
+    1. 杂念种子胜出 → mind_wandering
+    2. 杂念种子吸引子附近 → mind_wandering
+    3. 远离原点后回归 → redirect_attention
+    4. 元认知种子附近 → meta_awareness
+    5. 默认 → breath_focus
     """
     dist_to_origin = np.linalg.norm(state_vec)
+
+    # 1. 杂念种子胜出 → mind_wandering（无论距离）
+    if dominant_name in ("Pain Discomfort", "Pending Tasks"):
+        return "mind_wandering"
 
     dist_to_pain = np.linalg.norm(state_vec - attractors["Pain Discomfort"])
     dist_to_tasks = np.linalg.norm(state_vec - attractors["Pending Tasks"])
@@ -189,11 +194,7 @@ def _classify_state_v4(
 
     if prev_state_vec is not None:
         prev_dist = np.linalg.norm(prev_state_vec)
-        if (
-            prev_dist > threshold_far
-            and dist_to_origin < threshold_near
-            and dist_to_origin < prev_dist * 0.6
-        ):
+        if prev_dist > threshold_far and dist_to_origin < threshold_near:
             return "redirect_attention"
 
     dist_to_reflection = np.linalg.norm(state_vec - attractors["Self Reflection"])
