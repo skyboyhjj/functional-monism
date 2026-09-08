@@ -17,6 +17,7 @@
 | 思维种子建模 (`src/models/thoughtseed.py`)    | ✅ 已上线 | 预期自由能（EFE）赢家通吃竞争机制。                         |
 | 冥想模拟 (`apps/meditation_dashboard.py`)  | 🟢 稳定版 | 交互式仪表盘：OU 噪声驱动、2D 状态空间、v0.9 自适应缓冲 + 时域滤波分类。 |
 | 验证模块 (`src/validation/`)                 | 🟢 稳定版 | 与 thoughtseeds_model 对比验证：自适应缓冲、多轮模拟、基准报告。定量误差 < 35%。 |
+| 参数优化 (`src/optimization/`)                | 🟢 稳定版 | v1.1 元优化器：Tikhonov 正则化 + 两级网格搜索，自动校准 θ 和 σ。 |
 | 决策模型 (`src/examples/decision_model.py`) | ✅ 已上线 | 效用泛函极值优化的决策框架。                              |
 | 公理验证 (`src/examples/demo_basic.py`)     | ✅ 已上线 | 三大公理可编程性验证（JAX 自动微分）。                       |
 
@@ -150,6 +151,8 @@ pytest tests/
 - [x] **已完成（v0.9）**：微调 OU 参数延长 MW 驻留。新手 σ 0.35→0.28，θ 0.06→0.05。MW 驻留从 47.5 提升至 61.3 步（+29%），占比 45.2%。
 
 - [x] **已完成（v1.0）**：定量验证首次发布。与 thoughtseeds_model 全面对比：定性 7/7 复现，核心定量误差 < 35%。专家 BF 驻留 97.0 步，新手 MW 占比 45.2%，驻留 61.3 步。
+
+- [x] **已完成（v1.1）**：元优化器（Tikhonov 正则化自动校准 θ 和 σ）。两级网格搜索（粗搜索 + 细化），替代手工调参。核心模块：`src/optimization/meta_optimizer.py`，运行：`python examples/run_meta_optimization.py`。
 
 - [ ] **v1.1+ 方向 1（真实数据校准）**：使用 EEG/fMRI 冥想数据替代 thoughtseeds_model 间接基准，实现与神经科学的直接对标。
 
