@@ -64,6 +64,9 @@ def run_single_simulation(
     """
     from src.validation.comparator import run_functional_monism_simulation
 
+    # 设置全局随机种子，确保 OUNoise 中的 np.random.randn 可复现
+    np.random.seed(seed)
+
     res = run_functional_monism_simulation(
         gamma=gamma,
         anchor=anchor,
@@ -99,8 +102,12 @@ def simulate_with_params(
     seed: int = 42,
     use_efe: bool = True,
     verbose: bool = False,
+    fixed_seeds: Optional[List[int]] = None,
 ) -> Dict[str, float]:
     """用给定的 θ 和 σ 运行多次模拟，返回平均指标。
+
+    v1.1a: 支持共同随机数（CRN）。当 fixed_seeds 不为 None 时，
+    所有参数组合使用相同的种子序列，消除跨参数比较的随机噪声。
 
     Args:
         theta: OU 回归速度。
@@ -109,9 +116,11 @@ def simulate_with_params(
         anchor: 呼吸锚定强度。
         steps: 模拟步数。
         n_runs: 运行次数（推荐 20）。
-        seed: 随机种子（每次运行递增）。
+        seed: 随机种子（每次运行递增，仅在 fixed_seeds=None 时使用）。
         use_efe: 是否使用 EFE 竞争模式。
         verbose: 是否打印进度。
+        fixed_seeds: 共同随机数序列。传入后所有参数组合使用相同种子，
+                    实现方差缩减（CRN / Common Random Numbers）。
 
     Returns:
         dict: {"mw_ratio": float, "mw_dwell": float}
@@ -120,13 +129,14 @@ def simulate_with_params(
     all_dwells = []
 
     for i in range(n_runs):
+        run_seed = fixed_seeds[i] if fixed_seeds is not None else seed + i * 137
         metrics = run_single_simulation(
             theta=theta,
             sigma=sigma,
             gamma=gamma,
             anchor=anchor,
             steps=steps,
-            seed=seed + i * 137,
+            seed=run_seed,
             use_efe=use_efe,
         )
         all_ratios.append(metrics["mw_ratio"])
@@ -193,12 +203,11 @@ def grid_search(
     n_runs: int = 5,
     steps: int = 500,
     verbose: bool = True,
+    use_crn: bool = True,
 ) -> List[Dict]:
     """在 (θ, σ) 网格上搜索，返回所有评估结果（按 loss 排序）。
 
-    使用两阶段加速策略：
-    - 粗搜索：n_runs=5, steps=500 (快速定位候选区域)
-    - 细化验证：n_runs=20, steps=2000 (精确评估)
+    v1.1a: 支持共同随机数（CRN），消除跨参数比较的随机噪声。
 
     Args:
         theta_range: (min, max) for θ。
@@ -207,9 +216,10 @@ def grid_search(
         n_sigma: σ 方向网格点数。
         alpha: θ 正则化强度。
         beta: σ 正则化强度。
-        n_runs: 每次评估的模拟次数（粗搜索用 5，细化用 20）。
+        n_runs: 每次评估的模拟次数（粗搜索用 10，细化用 20）。
         steps: 每次模拟的步数（粗搜索用 500，细化用 2000）。
         verbose: 是否打印进度。
+        use_crn: 是否使用共同随机数（推荐 True）。
 
     Returns:
         list[dict]: 按 loss 升序排列的结果列表。
@@ -217,11 +227,19 @@ def grid_search(
     theta_vals = np.linspace(theta_range[0], theta_range[1], n_theta)
     sigma_vals = np.linspace(sigma_range[0], sigma_range[1], n_sigma)
 
+    # CRN: 生成固定种子序列，所有参数组合共用
+    if use_crn:
+        rng = np.random.RandomState(2026)
+        fixed_seeds = [int(s) for s in rng.randint(0, 2**31, size=n_runs)]
+    else:
+        fixed_seeds = None
+
     total = n_theta * n_sigma
     est_per_point = 2.0 if steps >= 2000 else 0.5
     if verbose:
+        crn_tag = "CRN" if use_crn else "无CRN"
         print(f"  网格搜索: {n_theta}×{n_sigma} = {total} 个点 "
-              f"({n_runs}runs × {steps}steps)")
+              f"({n_runs}runs × {steps}steps, {crn_tag})")
         print(f"  θ ∈ [{theta_range[0]:.3f}, {theta_range[1]:.3f}]")
         print(f"  σ ∈ [{sigma_range[0]:.3f}, {sigma_range[1]:.3f}]")
         print(f"  预计耗时: ~{total * est_per_point:.0f} 秒")
@@ -234,6 +252,7 @@ def grid_search(
         for sg in sigma_vals:
             metrics = simulate_with_params(
                 float(th), float(sg), n_runs=n_runs, steps=steps,
+                fixed_seeds=fixed_seeds,
             )
             loss, _ = meta_loss(float(th), float(sg), alpha, beta, metrics=metrics)
             results.append({
@@ -276,6 +295,9 @@ def refine_search(
     n_runs: int = 20,
     steps: int = 2000,
     verbose: bool = True,
+    use_crn: bool = True,
+    theta_min: float = 0.005,
+    theta_max: float = 0.15,
 ) -> List[Dict]:
     """在最优解附近进行细化搜索。
 
@@ -293,6 +315,9 @@ def refine_search(
         n_runs: 每次评估的模拟次数（细化用 20）。
         steps: 每次模拟的步数（细化用 2000）。
         verbose: 是否打印进度。
+        use_crn: 是否使用共同随机数。
+        theta_min: θ 下界（v1.1a 扩展至 0.005）。
+        theta_max: θ 上界。
 
     Returns:
         list[dict]: 按 loss 升序排列的结果列表。
@@ -301,14 +326,15 @@ def refine_search(
     half_theta = theta_step * 1.2
     half_sigma = sigma_step * 1.2
 
-    theta_range = (max(0.02, best_theta - half_theta),
-                   min(0.15, best_theta + half_theta))
+    theta_range = (max(theta_min, best_theta - half_theta),
+                   min(theta_max, best_theta + half_theta))
     sigma_range = (max(0.15, best_sigma - half_sigma),
                    min(0.50, best_sigma + half_sigma))
 
     if verbose:
+        crn_tag = "CRN" if use_crn else "无CRN"
         print(f"\n  细化验证: {n_theta}×{n_sigma} = {n_theta * n_sigma} 个点 "
-              f"({n_runs}runs × {steps}steps)")
+              f"({n_runs}runs × {steps}steps, {crn_tag})")
         print(f"  θ ∈ [{theta_range[0]:.4f}, {theta_range[1]:.4f}]")
         print(f"  σ ∈ [{sigma_range[0]:.4f}, {sigma_range[1]:.4f}]")
 
@@ -322,6 +348,7 @@ def refine_search(
         n_runs=n_runs,
         steps=steps,
         verbose=verbose,
+        use_crn=use_crn,
     )
 
 
@@ -333,12 +360,20 @@ def optimize_parameters(
     n_coarse: int = 20,
     n_refine: int = 10,
     verbose: bool = True,
+    use_crn: bool = True,
 ) -> Tuple[float, float, List[Dict]]:
     """主入口：运行两级网格搜索，自动寻找最优的 θ 和 σ。
 
+    v1.1a 改进：
+        - CRN（共同随机数）：消除跨参数比较的随机噪声
+        - θ 范围扩展至 0.005-0.15（确认边界效应）
+        - 粗搜索 runs 提升至 10（降低 SE）
+
     策略：
-        1. 粗搜索：在宽范围（θ: 0.02-0.15, σ: 0.15-0.50）上 20×20 网格
-        2. 细化搜索：在最优解附近 10×10 网格
+        1. 粗搜索：在宽范围（θ: 0.005-0.15, σ: 0.15-0.50）上 10×10 网格
+           10 runs × 500 steps + CRN
+        2. 细化搜索：在最优解附近 5×5 网格
+           20 runs × 2000 steps + CRN
 
     Args:
         theta_init: 初始 θ（v0.9 最优值，仅用于显示对比）。
@@ -348,46 +383,55 @@ def optimize_parameters(
         n_coarse: 粗搜索网格点数（每维度）。
         n_refine: 细化搜索网格点数（每维度）。
         verbose: 是否打印进度。
+        use_crn: 是否使用共同随机数（推荐 True）。
 
     Returns:
         tuple: (theta_opt, sigma_opt, history)
             history 是 (粗搜索 + 细化搜索) 的完整结果列表。
     """
+    # v1.1a: θ 范围扩展至 0.005
+    theta_min, theta_max = 0.005, 0.15
+    sigma_min, sigma_max = 0.15, 0.50
+
     if verbose:
         print("=" * 60)
-        print("v1.1 元优化器：Tikhonov 正则化自动校准 θ 和 σ")
+        print("v1.1a 元优化器：Tikhonov 正则化 + CRN 自动校准")
         print("=" * 60)
         print(f"  目标: 匹配 thoughtseeds_model 新手模式基准")
         print(f"  基准: MW 占比 {BENCHMARK['mind_wandering_ratio']:.1%}, "
               f"MW 驻留 {BENCHMARK['mind_wandering_dwell']:.1f} 步")
         print(f"  v0.9 手工调参: θ={theta_init}, σ={sigma_init}")
         print(f"  正则化: α={alpha}, β={beta}")
+        print(f"  CRN: {'开启' if use_crn else '关闭'}")
+        print(f"  θ 范围: [{theta_min}, {theta_max}]（v1.1a 扩展下界）")
         print()
 
-    # 阶段 1: 粗搜索（快速模式：5 runs × 500 steps）
+    # 阶段 1: 粗搜索（v1.1a: 10 runs × 500 steps + CRN）
     if verbose:
-        print("阶段 1: 粗搜索（5 runs × 500 steps）")
+        print("阶段 1: 粗搜索（10 runs × 500 steps, CRN）")
     coarse_results = grid_search(
-        theta_range=(0.02, 0.15),
-        sigma_range=(0.15, 0.50),
+        theta_range=(theta_min, theta_max),
+        sigma_range=(sigma_min, sigma_max),
         n_theta=n_coarse,
         n_sigma=n_coarse,
         alpha=alpha,
         beta=beta,
-        n_runs=5,
+        n_runs=10,
         steps=500,
         verbose=verbose,
+        use_crn=use_crn,
     )
 
     best_coarse = coarse_results[0]
 
     # 计算粗搜索步长
-    theta_step = (0.15 - 0.02) / (n_coarse - 1)
-    sigma_step = (0.50 - 0.15) / (n_coarse - 1)
+    theta_step = (theta_max - theta_min) / (n_coarse - 1)
+    sigma_step = (sigma_max - sigma_min) / (n_coarse - 1)
 
-    # 阶段 2: 细化搜索
+    # 阶段 2: 细化搜索（v1.1a: 20 runs × 2000 steps + CRN）
     if verbose:
-        print(f"\n阶段 2: 细化验证（20 runs × 2000 steps） — 围绕 θ={best_coarse['theta']:.4f}, "
+        print(f"\n阶段 2: 细化验证（20 runs × 2000 steps, CRN） — "
+              f"围绕 θ={best_coarse['theta']:.4f}, "
               f"σ={best_coarse['sigma']:.4f}")
 
     refine_results = refine_search(
@@ -402,6 +446,9 @@ def optimize_parameters(
         n_runs=20,
         steps=2000,
         verbose=verbose,
+        use_crn=use_crn,
+        theta_min=theta_min,
+        theta_max=theta_max,
     )
 
     best_refine = refine_results[0]
@@ -415,9 +462,9 @@ def optimize_parameters(
         print("优化完成")
         print("=" * 60)
         print(f"  v0.9 手工调参: θ={theta_init}, σ={sigma_init}")
-        print(f"  v1.1 粗搜索:   θ={best_coarse['theta']:.4f}, "
+        print(f"  v1.1a 粗搜索:  θ={best_coarse['theta']:.4f}, "
               f"σ={best_coarse['sigma']:.4f}")
-        print(f"  v1.1 细化搜索: θ={best_refine['theta']:.4f}, "
+        print(f"  v1.1a 细化搜索: θ={best_refine['theta']:.4f}, "
               f"σ={best_refine['sigma']:.4f}")
         print(f"  最优 MW 占比: {best_refine['mw_ratio']:.1%} "
               f"(基准 {BENCHMARK['mind_wandering_ratio']:.1%})")
