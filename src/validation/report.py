@@ -5,10 +5,26 @@
 - 关键指标对比表
 - 误差分析
 - 验证结论
+
+v0.5: 新增 thoughtseeds_model 基准数值对比表。
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from datetime import datetime
+
+import numpy as np
+
+# v0.5: thoughtseeds_model 基准值（来自论文图 3 和任务书）
+THOUGHTSEEDS_BENCHMARK = {
+    "expert": {
+        "breath_focus_dwell": 93.7,      # 专家 breath_focus 平均驻留（步）
+        "meta_awareness": 0.462,           # 专家 meta-awareness 平均水平
+    },
+    "novice": {
+        "mind_wandering_dwell": 89.6,     # 新手 mind_wandering 平均驻留（步）
+        "mind_wandering_pct": 53.8,        # 新手 mind_wandering 占比（%）
+    },
+}
 
 
 def generate_report(
@@ -172,5 +188,156 @@ def generate_report(
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(report)
         print(f"[report] 报告已保存至: {output_path}")
+
+    return report
+
+
+def generate_benchmark_report(
+    multi_run_results: Dict[str, object],
+    mode: str = "expert",
+    output_path: Optional[str] = None,
+) -> str:
+    """v0.5: 生成与 thoughtseeds_model 基准的定量对比报告。
+
+    Args:
+        multi_run_results: run_multiple_simulations() 的返回结果。
+        mode: "expert" 或 "novice"，对应不同的基准值。
+        output_path: 如果指定，将报告写入该文件。
+
+    Returns:
+        str: Markdown 格式的基准对比报告。
+    """
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    benchmark = THOUGHTSEEDS_BENCHMARK.get(mode, THOUGHTSEEDS_BENCHMARK["expert"])
+    config = multi_run_results.get("config", {})
+    dwell = multi_run_results.get("dwell_times", {})
+    freq = multi_run_results.get("state_frequencies", {})
+
+    lines = []
+    lines.append("# v0.5 定量验证报告：functional-monism vs thoughtseeds_model")
+    lines.append("")
+    lines.append(f"**生成时间**：{now}")
+    lines.append(f"**验证模式**：{mode}")
+    lines.append(f"**运行次数**：{config.get('n_runs', 'N/A')} 次")
+    lines.append(f"**每轮步数**：{config.get('steps', 'N/A')} 步")
+    lines.append("")
+
+    # ---- 1. 配置信息 ----
+    lines.append("## 1. 模拟配置")
+    lines.append("")
+    lines.append(f"| 参数 | 值 |")
+    lines.append(f"| :--- | :--- |")
+    lines.append(f"| γ（全局精度） | {config.get('gamma', 'N/A')} |")
+    lines.append(f"| 呼吸锚定 | {config.get('anchor', 'N/A')} |")
+    lines.append(f"| θ（回归速度） | {config.get('theta', 'N/A')} |")
+    lines.append(f"| σ（波动幅度） | {config.get('sigma_ou', 'N/A')} |")
+    lines.append(f"| EFE 模式 | {config.get('use_efe', False)} |")
+    lines.append("")
+
+    # ---- 2. 状态分布对比 ----
+    lines.append("## 2. 状态分布对比")
+    lines.append("")
+    lines.append("| 状态 | functional-monism (mean ± std) | thoughtseeds 基准 | 误差 |")
+    lines.append("| :--- | :---: | :---: | :---: |")
+
+    if mode == "novice":
+        mw_pct = freq.get("mind_wandering", {}).get("mean", 0)
+        mw_std = freq.get("mind_wandering", {}).get("std", 0)
+        ref = benchmark.get("mind_wandering_pct", 0)
+        err = abs(mw_pct - ref) / max(ref, 1e-6) * 100
+        lines.append(f"| mind_wandering 占比 | {mw_pct:.1f}% ± {mw_std:.1f}% | {ref:.1f}% | {err:.1f}% |")
+
+    # 通用状态
+    for state in ["breath_focus", "mind_wandering", "meta_awareness", "redirect_attention"]:
+        if state in freq:
+            mean_v = freq[state]["mean"]
+            std_v = freq[state]["std"]
+            lines.append(f"| {state} | {mean_v:.1f}% ± {std_v:.1f}% | — | — |")
+    lines.append("")
+
+    # ---- 3. 驻留时间对比 ----
+    lines.append("## 3. 驻留时间对比（平均连续步数）")
+    lines.append("")
+    lines.append("| 状态 | functional-monism (mean ± std) | 最大驻留 (mean) | thoughtseeds 基准 | 误差 |")
+    lines.append("| :--- | :---: | :---: | :---: | :---: |")
+
+    if mode == "expert":
+        bf = dwell.get("breath_focus", {})
+        bf_mean = bf.get("mean_dwell", 0)
+        bf_std = bf.get("std_dwell", 0)
+        bf_max = bf.get("max_dwell_mean", 0)
+        ref = benchmark.get("breath_focus_dwell", 0)
+        err = abs(bf_mean - ref) / max(ref, 1e-6) * 100
+        lines.append(f"| breath_focus | {bf_mean:.1f} ± {bf_std:.1f} | {bf_max:.1f} | {ref:.1f} | {err:.1f}% |")
+
+    if mode == "novice":
+        mw = dwell.get("mind_wandering", {})
+        mw_mean = mw.get("mean_dwell", 0)
+        mw_std = mw.get("std_dwell", 0)
+        mw_max = mw.get("max_dwell_mean", 0)
+        ref = benchmark.get("mind_wandering_dwell", 0)
+        err = abs(mw_mean - ref) / max(ref, 1e-6) * 100
+        lines.append(f"| mind_wandering | {mw_mean:.1f} ± {mw_std:.1f} | {mw_max:.1f} | {ref:.1f} | {err:.1f}% |")
+
+    # 其他状态
+    for state in ["breath_focus", "mind_wandering", "meta_awareness", "redirect_attention"]:
+        if state in dwell:
+            d = dwell[state]
+            if (mode == "expert" and state == "breath_focus") or (mode == "novice" and state == "mind_wandering"):
+                continue  # 已在上面处理
+            lines.append(f"| {state} | {d['mean_dwell']:.1f} ± {d['std_dwell']:.1f} | {d['max_dwell_mean']:.1f} | — | — |")
+    lines.append("")
+
+    # ---- 4. 结论 ----
+    lines.append("## 4. 验证结论")
+    lines.append("")
+
+    # 计算关键误差
+    key_errors = []
+    if mode == "expert":
+        bf = dwell.get("breath_focus", {})
+        if bf:
+            err = abs(bf.get("mean_dwell", 0) - benchmark["breath_focus_dwell"]) / max(benchmark["breath_focus_dwell"], 1e-6)
+            key_errors.append(("breath_focus 驻留", err))
+    elif mode == "novice":
+        mw = dwell.get("mind_wandering", {})
+        if mw:
+            err = abs(mw.get("mean_dwell", 0) - benchmark["mind_wandering_dwell"]) / max(benchmark["mind_wandering_dwell"], 1e-6)
+            key_errors.append(("mind_wandering 驻留", err))
+        mw_pct = freq.get("mind_wandering", {}).get("mean", 0)
+        if mw_pct:
+            err = abs(mw_pct - benchmark["mind_wandering_pct"]) / max(benchmark["mind_wandering_pct"], 1e-6)
+            key_errors.append(("mind_wandering 占比", err))
+
+    if key_errors:
+        avg_err = np.mean([e[1] for e in key_errors]) if key_errors else 0
+        lines.append(f"**关键指标平均误差**：{avg_err:.1%}")
+        lines.append("")
+
+        if avg_err < 0.30:
+            lines.append("✅ **定量复现成功**：关键指标误差 < 30%，functional-monism 在数值层面成功复现了 thoughtseeds_model 的核心发现。")
+        elif avg_err < 0.50:
+            lines.append("⚠️ **部分定量复现**：关键指标误差在 30%-50% 之间，定性模式一致但定量偏差较大。")
+        else:
+            lines.append("❌ **定量复现不足**：关键指标误差 > 50%，需调整参数或模型架构。")
+
+        lines.append("")
+        lines.append("### 误差分析")
+        lines.append("")
+        for name, err in key_errors:
+            lines.append(f"- **{name}**：误差 {err:.1%}")
+            if err > 0.50:
+                lines.append(f"  - 可能根因：时间尺度差异（{config.get('steps', '?')} 步 vs 2000 步评估窗口）、状态定义差异、OU 参数需调优")
+    lines.append("")
+
+    lines.append("---")
+    lines.append(f"*v0.5 定量验证报告 · functional-monism · {now}*")
+
+    report = "\n".join(lines)
+
+    if output_path:
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(report)
+        print(f"[report] 基准对比报告已保存至: {output_path}")
 
     return report

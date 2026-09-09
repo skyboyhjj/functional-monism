@@ -14,7 +14,9 @@ def analyze_entity(state, gamma=1.0):
     # 梯度（决定演化方向，对应"力"或"预测误差"）
     gradient = grad(F)(state)
     
-    # 精度（Hessian矩阵的二阶迹，对应"质量"或"注意力曲率"）
+    # 精度（Hessian 矩阵的迹，对应"质量"或"注意力曲率"）
+    # 注：此处为演示级简化口径；公理 III 严格定义为算子范数（谱范数），
+    #     核心引擎 functional.py 采用 Frobenius 范数作为可计算近似。
     hessian_matrix = hessian(F)(state)
     precision_metric = jnp.trace(hessian_matrix) 
     

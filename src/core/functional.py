@@ -76,6 +76,34 @@ class FunctionalEngine:
         gamma = jnp.linalg.norm(H_flat, ord='fro')
         return float(gamma)
 
+    def compute_operator_norm(self, F, psi):
+        """计算二阶变分导数的算子范数（谱范数），作为精度 γ 的严格定义。
+
+        根据公理 III，γ = ‖δ²F/δψ²‖_L 的严格定义采用算子范数，即
+        Hessian 的最大奇异值，几何意义为曲率最大方向上的"陡峭程度"。
+
+        注意：仅当 F 为凸泛函时 Hessian 半正定，算子范数才等于最大特征值
+        λ_max；对一般非凸泛函，算子范数取 max_i |λ_i|。
+
+        Args:
+            F: 泛函函数，签名为 F(psi) -> scalar。
+            psi: 状态向量或张量，jnp.ndarray。
+
+        Returns:
+            float: 精度 γ = ‖H‖₂（谱范数）。
+
+        Example:
+            >>> engine = FunctionalEngine()
+            >>> F = lambda psi: jnp.sum(psi ** 2)
+            >>> psi = jnp.array([1.0, 2.0])
+            >>> engine.compute_operator_norm(F, psi)
+            # H = diag(2, 2)，谱范数 = 2.0
+        """
+        H = jax.hessian(F)(psi)
+        H_flat = H.reshape(psi.size, psi.size)
+        gamma = jnp.linalg.norm(H_flat, ord=2)
+        return float(gamma)
+
     def gradient_flow(self, F, psi, alpha):
         """执行梯度下降步进：ψ_{t+1} = ψ_t − α·∇F(ψ_t)。
 

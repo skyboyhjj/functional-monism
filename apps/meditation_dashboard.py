@@ -191,25 +191,25 @@ with st.sidebar:
     st.divider()
 
     st.markdown("### 🧠 场景预设")
-	    preset = st.selectbox(
-	        "选择预设场景",
-	        [
-	            "默认（5种子均衡）",
-	            "新手模式（v1.1a CRN 自动校准）",
-	            "专家模式（高精度 + 锚定 + 强回归）",
-	        ],
-	    )
+    preset = st.selectbox(
+        "选择预设场景",
+        [
+            "默认（5种子均衡）",
+            "新手模式（v1.1a CRN 自动校准）",
+            "专家模式（高精度 + 锚定 + 强回归）",
+        ],
+    )
 
-	    if "新手" in preset:
-	        global_gamma = 0.3
-	        anchor_breath = 1.0
-	        theta = 0.0139
-            sigma_ou = 0.29
-	    elif "专家" in preset:
-	        global_gamma = 3.0
-	        anchor_breath = 5.0
-	        theta = 0.25
-	        sigma_ou = 0.15
+    if "新手" in preset:
+        global_gamma = 0.3
+        anchor_breath = 1.0
+        theta = 0.0139
+        sigma_ou = 0.29
+    elif "专家" in preset:
+        global_gamma = 3.0
+        anchor_breath = 5.0
+        theta = 0.25
+        sigma_ou = 0.15
 
     st.divider()
 
