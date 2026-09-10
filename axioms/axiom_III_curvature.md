@@ -10,17 +10,19 @@ $$
 
 ## 严格定义
 
-设 $F[\psi]$ 为存在公理中的泛函表示，$\frac{\delta^2 F}{\delta \psi^2}$ 为泛函的二阶泛函导数（泛函 Hessian 算子）。定义认知置信度 $\gamma$：
+设 $F[\psi]$ 为存在公理中的泛函表示，$\frac{\delta^2 F}{\delta \psi^2}$ 为泛函的二阶泛函导数（泛函 Hessian 算子，记为 $H$）。定义认知置信度 $\gamma$：
 
 $$
-\gamma \equiv \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{H}}
+\gamma \equiv \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{S}_1} \equiv \operatorname{Tr}\!\left(\frac{\delta^2 F}{\delta \psi^2}\right)
 $$
 
-其中 $\|\cdot\|_{\mathcal{H}}$ 为泛函 Hilbert 空间 $\mathcal{H}$ 上的算子范数：
+其中 $\|\cdot\|_{\mathcal{S}_1}$ 为 **Schatten-1 范数**（迹范数 / 核范数）。对正定 Hessian 而言，其 Schatten-1 范数等于全部特征值之和：
 
 $$
-\|A\|_{\mathcal{H}} \equiv \sup_{\|\eta\|=1} \|A\eta\|_{\mathcal{H}}
+\|H\|_{\mathcal{S}_1} = \sum_i \lambda_i = \operatorname{Tr}(H)
 $$
+
+语义上，$\gamma$ 度量的是"总认知信息量"——所有认知维度曲率的总和，而非单一最敏感方向的曲率。
 
 ## 二阶泛函导数的坐标表示
 
@@ -51,10 +53,10 @@ $$
 其中 $\mathcal{I}(\psi)$ 为 **Fisher 信息矩阵**。因此：
 
 $$
-\gamma = \|\mathcal{I}(\psi)\|
+\gamma = \operatorname{Tr}\!\left(\mathcal{I}(\psi)\right) = \sum_i \mathcal{I}_{ii}(\psi)
 $$
 
-即认知置信度等价于 Fisher 信息的范数——信息量越大，认知越精确。
+即认知置信度等价于 Fisher 信息的迹——总信息量越大，认知越精确。
 
 ## 与 Cramér-Rao 界的关系
 
@@ -84,7 +86,7 @@ $$
 在实际计算中，泛函 Hessian 的迹给出精度：
 
 $$
-\gamma \approx \text{Tr}\left(\frac{\delta^2 F}{\delta \psi^2}\right) = \sum_i \frac{\partial^2 F}{\partial c_i^2}
+\gamma = \text{Tr}\left(\frac{\delta^2 F}{\delta \psi^2}\right) = \sum_i \frac{\partial^2 F}{\partial c_i^2}
 $$
 
-可使用 JAX 的 `jax.hessian` 自动计算，详见 [src/core/precision.py](../src/core/precision.py)。
+可使用 JAX 的 `jax.hessian` 自动计算 Hessian 后取迹，详见 [src/core/functional.py](../src/core/functional.py) 中的 `compute_precision`。
