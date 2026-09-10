@@ -47,6 +47,7 @@ class OUNoise:
         self.sigma = sigma
         self.dt = dt
         self.state = np.zeros(dim)
+        self._mu_eff = np.zeros(dim)
 
     def reset(self, initial_state: Optional[np.ndarray] = None) -> np.ndarray:
         """重置状态。
@@ -62,18 +63,31 @@ class OUNoise:
             if initial_state is not None
             else np.zeros(self.dim)
         )
+        self._mu_eff = np.zeros(self.dim)
         return self.state.copy()
 
-    def step(self) -> np.ndarray:
-        """执行一步 OU 更新。
+    def set_mu_eff(self, mu_eff) -> None:
+        """设置外部调制的有效均值偏移。
 
-        dx = θ(μ - x)dt + σ · dW
+        用于马尔可夫毯双通道：将回归目标从 μ 替换为 μ + μ_eff。
+        默认 _mu_eff = 0，行为与未启用双通道时完全一致。
+
+        Args:
+            mu_eff: 形状 (dim,) 的均值偏移向量（或标量）。
+        """
+        self._mu_eff = np.asarray(mu_eff, dtype=float)
+
+    def step(self) -> np.ndarray:
+        """执行一步 OU 更新（支持外部均值调制）。
+
+        dx = θ((μ + μ_eff) - x)dt + σ · dW
 
         Returns:
             np.ndarray: 更新后的状态。
         """
         dW = np.random.randn(self.dim) * np.sqrt(self.dt)
-        dx = self.theta * (self.mu - self.state) * self.dt + self.sigma * dW
+        mu_total = self.mu + self._mu_eff
+        dx = self.theta * (mu_total - self.state) * self.dt + self.sigma * dW
         self.state += dx
         return self.state.copy()
 

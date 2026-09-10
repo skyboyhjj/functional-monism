@@ -20,6 +20,7 @@ from src.models.workspace import (
     create_default_seeds,
 )
 from src.models.ou_noise import OUNoise
+from src.models.markov_blanket import MarkovBlanket
 from .data_loader import THOUGHTSEED_NAMES, MEDITATION_STATES
 from .metrics import extract_all_metrics, calculate_dwell_times, classify_state_with_buffer
 
@@ -40,6 +41,15 @@ def run_functional_monism_simulation(
     breath_zone_radius: float = 0.5,
     mw_zone_radius: float = 1.8,
     meta_zone_radius: float = 1.5,
+    # v1.2 新增双通道参数（默认关闭，保持向后兼容）
+    use_markov_blanket: bool = False,
+    kappa: float = 0.15,
+    beta: float = 0.1,
+    sigma_a: float = 0.02,
+    eta_a: float = 1.0,
+    rho: float = 0.3,
+    tau: float = 0.5,
+    gamma_a: float = 0.1,
 ) -> Dict[str, object]:
     """运行 functional-monism 冥想模拟。
 
@@ -69,6 +79,14 @@ def run_functional_monism_simulation(
         breath_zone_radius: 呼吸区半径（v0.6 新增）。
         mw_zone_radius: 杂念区半径（v0.6 新增）。
         meta_zone_radius: 元认知区半径（v0.6 新增）。
+        use_markov_blanket: 是否启用马尔可夫毯双通道（v1.2 新增，默认关闭）。
+        kappa: 渗透性（耦合强度）。
+        beta: 行动步长。
+        sigma_a: 行动噪声。
+        eta_a: 行动增益。
+        rho: 死区半径。
+        tau: 平滑过渡尺度。
+        gamma_a: 行动对 OU 均值的影响系数。
 
     Returns:
         dict: 包含状态序列、激活值历史、meta_awareness 等。
@@ -87,30 +105,51 @@ def run_functional_monism_simulation(
         s.name: np.array(s.core_attractor).ravel() for s in seeds
     }
 
-    # OU 噪声生成轨迹
-    if use_2d:
-        ou = OUNoise(dim=2, theta=theta, sigma=sigma_ou)
-        perturbations = []
-        if perturbation_time < steps and perturbation_strength > 0:
-            perturbations.append((perturbation_time, np.array([2.0, 0.5])))
-        state_stream = ou.generate_trajectory(steps, perturbations=perturbations)
-    else:
-        ou = OUNoise(dim=1, theta=theta, sigma=sigma_ou)
-        perturbations = []
-        if perturbation_time < steps and perturbation_strength > 0:
-            perturbations.append((perturbation_time, np.array([perturbation_strength])))
-        state_stream = ou.generate_trajectory(steps, perturbations=perturbations).ravel()
+    # OU 噪声过程（v1.2：逐步 step 重构，支持外部均值调制 + 马尔可夫毯闭环）
+    ou_dim = 2 if use_2d else 1
+    ou = OUNoise(dim=ou_dim, theta=theta, sigma=sigma_ou)
 
-    state_history = []
+    # 扰动字典（逐步注入；与 generate_trajectory 一致：先扰动后 step）
+    perturb_dict = {}
+    if perturbation_time < steps and perturbation_strength > 0:
+        if use_2d:
+            perturb_dict[perturbation_time] = np.array([2.0, 0.5])
+        else:
+            perturb_dict[perturbation_time] = np.array([perturbation_strength])
+
+    # 马尔可夫毯双通道（默认关闭，保持向后兼容）
+    if use_markov_blanket:
+        blanket = MarkovBlanket(
+            dim=ou_dim, kappa=kappa, beta=beta, sigma_a=sigma_a,
+            eta_a=eta_a, rho=rho, tau=tau, gamma_a=gamma_a,
+        )
+    else:
+        blanket = None
+
+    state_stream = []
     activation_history = []
     meta_awareness_history = []
     dominant_history = []
 
     for t in range(steps):
+        # 1. 扰动注入（与 generate_trajectory 一致：先扰动后 step）
+        if t in perturb_dict:
+            ou.state += perturb_dict[t]
+
+        # 2. OU 步进（感知通道）
+        psi = ou.step()
+
+        # 3. 马尔可夫毯行动通道（为下一步调制 OU 均值）
+        if blanket is not None:
+            _, mu_eff = blanket.step(psi)
+            ou.set_mu_eff(mu_eff)
+
+        state_stream.append(psi)
+
         if use_2d:
-            state_jnp = jnp.asarray(state_stream[t], dtype=jnp.float32)
+            state_jnp = jnp.asarray(psi, dtype=jnp.float32)
         else:
-            state_jnp = float(state_stream[t])
+            state_jnp = float(psi[0])
 
         activations, dominant = workspace.compete(
             state_jnp, global_gamma=gamma, use_efe=use_efe
@@ -177,6 +216,14 @@ def run_functional_monism_simulation(
             "sigma_ou": sigma_ou,
             "buffer_size": buffer_size,
             "breath_zone_radius": breath_zone_radius,
+            "use_markov_blanket": use_markov_blanket,
+            "kappa": kappa,
+            "beta": beta,
+            "sigma_a": sigma_a,
+            "eta_a": eta_a,
+            "rho": rho,
+            "tau": tau,
+            "gamma_a": gamma_a,
         },
     }
 

@@ -23,6 +23,7 @@ from collections import Counter
 
 from src.models.workspace import MeditationSeed, GlobalWorkspace, create_default_seeds
 from src.models.ou_noise import OUNoise
+from src.models.markov_blanket import MarkovBlanket
 from src.validation.comparator import run_multiple_simulations
 from src.validation.metrics import classify_state_with_buffer, compute_buffer_size
 from src.validation.report import generate_benchmark_report, THOUGHTSEEDS_BENCHMARK
@@ -190,6 +191,22 @@ with st.sidebar:
 
     st.divider()
 
+    with st.expander("🧠 马尔可夫毯双通道（实验性）"):
+        use_markov_blanket = st.checkbox(
+            "启用双通道",
+            value=False,
+            help="启用行动通道，系统可主动拉回注意力（v1.2 Phase 1）。",
+        )
+        kappa = st.slider("渗透性 κ", 0.05, 0.5, 0.15, 0.01)
+        beta = st.slider("行动步长 β", 0.05, 0.15, 0.1, 0.01)
+        sigma_a = st.slider("行动噪声 σ_a", 0.01, 0.03, 0.02, 0.001)
+        eta_a = st.slider("行动增益 η_a", 0.5, 2.0, 1.0, 0.1)
+        rho = st.slider("死区半径 ρ", 0.1, 0.5, 0.3, 0.05)
+        tau = st.slider("平滑过渡 τ", 0.3, 1.0, 0.5, 0.05)
+        gamma_a = st.slider("均值耦合 γ_a", 0.05, 0.2, 0.1, 0.01)
+
+    st.divider()
+
     st.markdown("### 🧠 场景预设")
     preset = st.selectbox(
         "选择预设场景",
@@ -205,6 +222,8 @@ with st.sidebar:
         anchor_breath = 1.0
         theta = 0.0139
         sigma_ou = 0.29
+        use_markov_blanket = True
+        kappa = 0.15
     elif "专家" in preset:
         global_gamma = 3.0
         anchor_breath = 5.0
@@ -270,30 +289,48 @@ attractor_positions = {
 
 np.random.seed(42)
 
-if use_2d:
-    # OU 过程生成 2D 轨迹
-    ou = OUNoise(dim=2, theta=theta, sigma=sigma_ou)
-    perturbations = []
-    if perturbation_time < steps:
-        perturbations.append((perturbation_time, np.array([2.0, 0.5])))
-    state_stream = ou.generate_trajectory(steps, perturbations=perturbations)
+# 马尔可夫毯双通道（默认关闭）
+if use_markov_blanket:
+    blanket = MarkovBlanket(
+        dim=dim, kappa=kappa, beta=beta, sigma_a=sigma_a,
+        eta_a=eta_a, rho=rho, tau=tau, gamma_a=gamma_a,
+    )
 else:
-    # 1D OU 过程
-    ou = OUNoise(dim=1, theta=theta, sigma=sigma_ou)
-    perturbations = []
-    if perturbation_time < steps:
-        perturbations.append((perturbation_time, np.array([perturbation_strength])))
-    state_stream = ou.generate_trajectory(steps, perturbations=perturbations).ravel()
+    blanket = None
+
+ou = OUNoise(dim=dim, theta=theta, sigma=sigma_ou)
+
+perturb_dict = {}
+if perturbation_time < steps:
+    if use_2d:
+        perturb_dict[perturbation_time] = np.array([2.0, 0.5])
+    else:
+        perturb_dict[perturbation_time] = np.array([perturbation_strength])
 
 # 存储每步的激活值
 activation_history = {name: np.zeros(steps) for name in seed_names}
 dominant_history = [""] * steps
+state_stream_list = []
 
 for t in range(steps):
+    # 扰动注入（先扰动后 step，与 generate_trajectory 一致）
+    if t in perturb_dict:
+        ou.state += perturb_dict[t]
+
+    # OU 步进（感知通道）
+    psi = ou.step()
+
+    # 马尔可夫毯行动通道（为下一步调制 OU 均值）
+    if blanket is not None:
+        _, mu_eff = blanket.step(psi)
+        ou.set_mu_eff(mu_eff)
+
+    state_stream_list.append(psi)
+
     if use_2d:
-        state = jnp.asarray(state_stream[t], dtype=jnp.float32)
+        state = jnp.asarray(psi, dtype=jnp.float32)
     else:
-        state = float(state_stream[t])
+        state = float(psi[0])
 
     workspace.seeds[0].precision_boost = anchor_breath
     activations, dominant = workspace.compete(state, global_gamma, use_efe=use_efe)
@@ -301,6 +338,12 @@ for t in range(steps):
     for seed in workspace.seeds:
         activation_history[seed.name][t] = seed.activation
     dominant_history[t] = dominant.name
+
+# 转为数组，保持下游绘图代码兼容
+if use_2d:
+    state_stream = np.array(state_stream_list)
+else:
+    state_stream = np.array(state_stream_list).ravel()
 
 # ============================================================================
 # v0.7 时域滤波分类：使用 classify_state_with_buffer（自适应缓冲）
