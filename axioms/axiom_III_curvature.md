@@ -86,9 +86,9 @@ $$
 > $$\operatorname{Tr}(H^{-1})\operatorname{Tr}(H) = \Big(\sum_i \tfrac{1}{\lambda_i}\Big)\Big(\sum_i \lambda_i\Big) \geq n^2,$$
 > 即 $\Delta\psi^2\cdot\gamma \geq n^2$。等号成立当且仅当 $H \propto I$（各向同性曲率）且估计有效。$n=1$ 时退化为 $\operatorname{Var}\cdot I \geq 1$（一维 Cramér–Rao）。
 >
-> **边界说明（6.2 无限维退化）**：在无限维情形下，若 $H$ 为迹类算子（$\operatorname{Tr}(H)<\infty$），则 $\lambda_i\to0$，$\operatorname{Tr}(H^{-1})=\sum_i 1/\lambda_i=\infty$，不等式退化为平凡。因此推论 1 的非平凡下界**仅在有限维（或有限截断）下有效**。
+> **边界说明（无限维退化）**：在无限维情形下，若 $H$ 为迹类算子（$\operatorname{Tr}(H)<\infty$），则 $\lambda_i\to0$，$\operatorname{Tr}(H^{-1})=\sum_i 1/\lambda_i=\infty$，不等式退化为平凡。因此推论 1 的非平凡下界**仅在有限维（或有限截断）下有效**。
 >
-> **边界说明（6.3 理论下限）**：$n^2$ 是**理论下限**（等号仅在各向同性曲率 $H\propto I$ 下成立）。实际认知系统中 Hessian 通常各向异性，$\Delta\psi^2\cdot\gamma$ 严格大于 $n^2$——这反映曲率谱展宽对"总不确定度 × 总曲率"的贡献。
+> **边界说明（理论下限）**：$n^2$ 是**理论下限**（等号仅在各向同性曲率 $H\propto I$ 下成立）。实际认知系统中 Hessian 通常各向异性，$\Delta\psi^2\cdot\gamma$ 严格大于 $n^2$——这反映曲率谱展宽对"总不确定度 × 总曲率"的贡献。
 >
 > **注 2（推论 2 的条件）**：数据处理不等式 $\gamma(\mathcal{T}[F])\le\gamma(F)$ 仅当 $\mathcal{T}$ 为**确定性马尔可夫核**（或等价地，条件期望）时成立；对任意泛函变换不成立。严格地，Fisher 信息满足矩阵偏序 $\mathcal{I}(\mathcal{T}[\psi])\preceq\mathcal{I}(\psi)$，取迹得 γ 版本。
 >
