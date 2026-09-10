@@ -76,15 +76,25 @@ $$
 
 | 序号 | 推论 | 数学表达 |
 |------|------|----------|
-| 1 | 曲率-不确定性关系 | $\Delta\psi^2\cdot\gamma \ge n^2$，即 $\operatorname{Tr}(H^{-1})\operatorname{Tr}(H)\ge n^2$（Schatten-1 口径；见注） |
-| 2 | 信息单调性 | 在泛函变换 $\mathcal{T}$ 下，$\gamma(\mathcal{T}[F]) \leq \gamma(F)$（数据处理不等式） |
-| 3 | 收敛判据 | 演化过程中 $\frac{d\gamma}{dt} \geq 0$：认知置信度单调不减（学习不可逆） |
+| 1 | 曲率-不确定性关系 | $\Delta\psi^2\cdot\gamma \ge n^2$，即 $\operatorname{Tr}(H^{-1})\operatorname{Tr}(H)\ge n^2$（Schatten-1 口径；见注 1） |
+| 2 | 信息单调性 | 对确定性马尔可夫核 $\mathcal{T}$，$\gamma(\mathcal{T}[F]) \le \gamma(F)$（数据处理不等式；见注 2） |
+| 3 | 收敛 / 学习不可逆 | 沿梯度流 $\frac{dF}{dt} = -\|\nabla F\|^2 \le 0$（自由能单调不增；见注 3） |
 | 4 | 精度谱分解 | $\gamma = \sum_i \lambda_i$，其中 $\lambda_i$ 为 Hessian 的特征值，对应不同认知维度 |
 
-> **注（推论 1 的推导，Schatten-1 口径）**
+> **注 1（推论 1 的推导，Schatten-1 口径）**
 > 记 $H=\frac{\delta^2 F}{\delta \psi^2}$，$\Delta\psi^2:=\operatorname{Tr}(H^{-1})$ 定义为总方差的**可达下界**（Laplace / Cramér–Rao 给出 $\operatorname{Cov}\succeq H^{-1}$，有效估计下取等，即 $\Delta\psi^2=\operatorname{Tr}(\operatorname{Cov})$），$n=\dim\psi$。由 Cauchy–Schwarz，
 > $$\operatorname{Tr}(H^{-1})\operatorname{Tr}(H) = \Big(\sum_i \tfrac{1}{\lambda_i}\Big)\Big(\sum_i \lambda_i\Big) \geq n^2,$$
 > 即 $\Delta\psi^2\cdot\gamma \geq n^2$。等号成立当且仅当 $H \propto I$（各向同性曲率）且估计有效。$n=1$ 时退化为 $\operatorname{Var}\cdot I \geq 1$（一维 Cramér–Rao）。
+>
+> **边界说明（6.2 无限维退化）**：在无限维情形下，若 $H$ 为迹类算子（$\operatorname{Tr}(H)<\infty$），则 $\lambda_i\to0$，$\operatorname{Tr}(H^{-1})=\sum_i 1/\lambda_i=\infty$，不等式退化为平凡。因此推论 1 的非平凡下界**仅在有限维（或有限截断）下有效**。
+>
+> **边界说明（6.3 理论下限）**：$n^2$ 是**理论下限**（等号仅在各向同性曲率 $H\propto I$ 下成立）。实际认知系统中 Hessian 通常各向异性，$\Delta\psi^2\cdot\gamma$ 严格大于 $n^2$——这反映曲率谱展宽对"总不确定度 × 总曲率"的贡献。
+>
+> **注 2（推论 2 的条件）**：数据处理不等式 $\gamma(\mathcal{T}[F])\le\gamma(F)$ 仅当 $\mathcal{T}$ 为**确定性马尔可夫核**（或等价地，条件期望）时成立；对任意泛函变换不成立。严格地，Fisher 信息满足矩阵偏序 $\mathcal{I}(\mathcal{T}[\psi])\preceq\mathcal{I}(\psi)$，取迹得 γ 版本。
+>
+> **注 3（推论 3 的条件）**：$d\gamma/dt\ge0$（曲率单调）**不具一般性**。沿梯度流 $d\psi/dt=-\nabla F$，
+> $$\frac{d\gamma}{dt}=\operatorname{Tr}\!\big(\nabla^3 F\cdot(-\nabla F)\big),$$
+> 其符号依赖三阶导数，无法保证非负。反例：$F(\psi)=\psi^4$，梯度流下 $F(t)\to0$（自由能下降）但 $\gamma=12\psi^2\to0$（曲率减小）。故"学习不可逆 / 收敛"的正确数学表述是 $\frac{dF}{dt}=-\|\nabla F\|^2\le0$，而非 $d\gamma/dt\ge0$。
 
 ## 数值计算
 
