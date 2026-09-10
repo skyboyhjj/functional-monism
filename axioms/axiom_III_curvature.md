@@ -3,10 +3,10 @@
 ## 形式化陈述
 
 $$
-\boxed{\;\gamma = \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|\;}
+\boxed{\;\gamma = \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{S}_1}\;}
 $$
 
-**认知置信度 $\gamma$ 等于泛函 $F$ 对场构型 $\psi$ 的二阶泛函导数的范数。**
+**认知置信度 $\gamma$ 等于泛函 $F$ 对场构型 $\psi$ 的二阶泛函导数的 Schatten-1 范数（核范数 / 迹范数）。**
 
 ## 严格定义
 
@@ -38,8 +38,8 @@ $$
 
 $F[\psi]$ 在泛函空间中构成一个"泛函曲面"。$\frac{\delta^2 F}{\delta \psi^2}$ 是该曲面在 $\psi$ 处的**曲率张量**：
 
-- **高曲率** ($\gamma \gg 1$)：泛函曲面尖锐，$F$ 对 $\psi$ 的变化敏感 → 高置信度
-- **低曲率** ($\gamma \ll 1$)：泛函曲面平坦，$F$ 对 $\psi$ 的变化不敏感 → 低置信度
+- **高曲率** ($\gamma \gg 1$)：泛函曲面总曲率大，$F$ 对 $\psi$ 的变化敏感 → 高置信度
+- **低曲率** ($\gamma \ll 1$)：泛函曲面总曲率小，$F$ 对 $\psi$ 的变化不敏感 → 低置信度
 - **零曲率** ($\gamma = 0$)：泛函曲面退化，$F$ 无法区分不同的 $\psi$ → 零置信度（无知状态）
 
 ## 认知置信度的统计解释
@@ -76,10 +76,15 @@ $$
 
 | 序号 | 推论 | 数学表达 |
 |------|------|----------|
-| 1 | 曲率-不确定性关系 | $\Delta \psi \cdot \gamma \geq \frac{1}{2}$（泛函版本的 Heisenberg 不确定性） |
+| 1 | 曲率-不确定性关系 | $\Delta\psi^2\cdot\gamma \ge n^2$，即 $\operatorname{Tr}(H^{-1})\operatorname{Tr}(H)\ge n^2$（Schatten-1 口径；见注） |
 | 2 | 信息单调性 | 在泛函变换 $\mathcal{T}$ 下，$\gamma(\mathcal{T}[F]) \leq \gamma(F)$（数据处理不等式） |
 | 3 | 收敛判据 | 演化过程中 $\frac{d\gamma}{dt} \geq 0$：认知置信度单调不减（学习不可逆） |
 | 4 | 精度谱分解 | $\gamma = \sum_i \lambda_i$，其中 $\lambda_i$ 为 Hessian 的特征值，对应不同认知维度 |
+
+> **注（推论 1 的推导，Schatten-1 口径）**
+> 记 $H=\frac{\delta^2 F}{\delta \psi^2}$，$\Delta\psi^2:=\operatorname{Tr}(H^{-1})$ 定义为总方差的**可达下界**（Laplace / Cramér–Rao 给出 $\operatorname{Cov}\succeq H^{-1}$，有效估计下取等，即 $\Delta\psi^2=\operatorname{Tr}(\operatorname{Cov})$），$n=\dim\psi$。由 Cauchy–Schwarz，
+> $$\operatorname{Tr}(H^{-1})\operatorname{Tr}(H) = \Big(\sum_i \tfrac{1}{\lambda_i}\Big)\Big(\sum_i \lambda_i\Big) \geq n^2,$$
+> 即 $\Delta\psi^2\cdot\gamma \geq n^2$。等号成立当且仅当 $H \propto I$（各向同性曲率）且估计有效。$n=1$ 时退化为 $\operatorname{Var}\cdot I \geq 1$（一维 Cramér–Rao）。
 
 ## 数值计算
 
