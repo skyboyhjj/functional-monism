@@ -65,7 +65,7 @@ $$\int \mathcal{D}\psi\;e^{\,iS[\psi]/\hbar}\ \longrightarrow\ \delta S=0\qquad(
 
 ### 引理 A（离散 Dirichlet 能量的 Γ-收敛）
 
-设网格间距为 h=1/n，边界取值恒为零。离散泛函
+设网格间距为 h=1/n，取 Dirichlet 零边界条件 u_0 = u_n = 0（连续极限下即 u(0)=u(1)=0）。离散泛函
 
 $$F_n(u)=\frac{1}{h}\sum_{i=0}^{n-1}(u_{i+1}-u_i)^2+h\sum_{i=1}^{n-1}(f_i-u_i)^2$$
 
