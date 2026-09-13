@@ -26,7 +26,7 @@ $$F_n(u)=\frac{1}{h}\sum_{i=0}^{n-1}(u_{i+1}-u_i)^2$$
 
 它的 Hessian（对坐标 u_i 的二阶偏导矩阵）是
 
-$$\operatorname{Hess}(F_n)=\frac{2}{h}A=2h\,L_n\ \ne\ L_n$$
+$$\mathrm{Hess}(F_n)=\frac{2}{h}A=2h\,L_n\ \ne\ L_n$$
 
 **关键：谱收敛到 −Δ 的算子是 L_n，而 Γ-收敛能源 F_n 的 Hessian 是 2h·L_n——两者相差因子 2h。** 后果是：
 
