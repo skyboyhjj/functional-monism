@@ -3,7 +3,7 @@
 ## 形式化陈述
 
 $$
-\boxed{\;\gamma = \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{S}_1}\;}
+\boxed{\gamma = \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{S}_1}}
 $$
 
 **认知置信度 $`\gamma`$ 等于泛函 $`F`$ 对场构型 $`\psi`$ 的二阶泛函导数的 Schatten-1 范数（核范数 / 迹范数）。**
@@ -16,13 +16,13 @@ $$
 \gamma \equiv \left\| \frac{\delta^2 F}{\delta \psi^2} \right\|_{\mathcal{S}_1} \equiv \mathrm{Tr}\left(\frac{\delta^2 F}{\delta \psi^2}\right)
 $$
 
-其中 $\|\cdot\|_{\mathcal{S}_1}$ 为 **Schatten-1 范数**（迹范数 / 核范数）。对正定 Hessian 而言，其 Schatten-1 范数等于全部特征值之和：
+其中 $`\|\cdot\|_{\mathcal{S}_1}`$ 为 **Schatten-1 范数**（迹范数 / 核范数）。对正定 Hessian 而言，其 Schatten-1 范数等于全部特征值之和：
 
 $$
 \|H\|_{\mathcal{S}_1} = \sum_i \lambda_i = \mathrm{Tr}(H)
 $$
 
-语义上，$\gamma$ 度量的是"总认知信息量"——所有认知维度曲率的总和，而非单一最敏感方向的曲率。
+语义上，$`\gamma`$ 度量的是"总认知信息量"——所有认知维度曲率的总和，而非单一最敏感方向的曲率。
 
 ## 二阶泛函导数的坐标表示
 
@@ -50,7 +50,7 @@ $$
 \frac{\delta^2 F}{\delta \psi^2} = -\frac{\delta^2}{\delta \psi^2} \log p(\psi) = \mathcal{I}(\psi)
 $$
 
-其中 $\mathcal{I}(\psi)$ 为 **Fisher 信息矩阵**。因此：
+其中 $`\mathcal{I}(\psi)`$ 为 **Fisher 信息矩阵**。因此：
 
 $$
 \gamma = \mathrm{Tr}\left(\mathcal{I}(\psi)\right) = \sum_i \mathcal{I}_{ii}(\psi)
@@ -78,7 +78,7 @@ $$
 |------|------|----------|
 | 1 | 曲率-不确定性关系 | $`\Delta\psi^2\cdot\gamma \ge n^2`$，即 $`\mathrm{Tr}(H^{-1})\mathrm{Tr}(H)\ge n^2`$（Schatten-1 口径；见注 1） |
 | 2 | 信息单调性 | 对确定性马尔可夫核 $`\mathcal{T}`$，$`\gamma(\mathcal{T}[F]) \le \gamma(F)`$（数据处理不等式；见注 2） |
-| 3 | 收敛 / 学习不可逆 | 沿梯度流 $\frac{dF}{dt} = -\|\nabla F\|^2 \le 0$（自由能单调不增；见注 3） |
+| 3 | 收敛 / 学习不可逆 | 沿梯度流 $`\frac{dF}{dt} = -\|\nabla F\|^2 \le 0`$（自由能单调不增；见注 3） |
 | 4 | 精度谱分解 | $`\gamma = \sum_i \lambda_i`$，其中 $`\lambda_i`$ 为 Hessian 的特征值，对应不同认知维度 |
 
 > **注 1（推论 1 的推导，Schatten-1 口径）**
