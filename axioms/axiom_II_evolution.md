@@ -3,7 +3,7 @@
 ## 形式化陈述
 
 $$
-\boxed{\;\delta \int F[\psi]\,dt = 0\;}
+\boxed{\delta \int F[\psi]\,dt = 0}
 $$
 
 **泛函 $F[\psi]$ 的演化路径积分满足变分原理（最小作用量原理）。**
@@ -22,7 +22,7 @@ $$
 \delta S[F] = \delta \int_{t_0}^{t_1} F[\psi(t)]\,dt = 0
 $$
 
-其中 $\delta$ 为泛函变分算子 (Functional Variation Operator)，定义为：
+其中 $`\delta`$ 为泛函变分算子 (Functional Variation Operator)，定义为：
 
 $$
 \delta S[F] \equiv \lim_{\varepsilon \to 0} \frac{S[F + \varepsilon\eta] - S[F]}{\varepsilon} = \int_{t_0}^{t_1} \frac{\delta F}{\delta \psi} \cdot \eta(t)\,dt
@@ -42,7 +42,7 @@ $$
 
 ## 演化方程的一般形式
 
-引入泛函 Lagrangian 密度 $\mathcal{L}[\psi, \partial_t\psi, \partial_x\psi]$：
+引入泛函 Lagrangian 密度 $`\mathcal{L}[\psi, \partial_t\psi, \partial_x\psi]`$：
 
 $$
 F[\psi] = \int \mathcal{L}[\psi, \partial_t\psi, \partial_x\psi]\,dx
@@ -62,10 +62,10 @@ $$
 
 | 序号 | 推论 | 数学表达 |
 |------|------|----------|
-| 1 | 演化确定性 | 给定初始 $F[\psi(t_0)]$，演化路径唯一确定 |
-| 2 | Noether 定理推广 | 泛函场的每个连续对称性对应一个守恒量：$\frac{d}{dt}Q = 0$ |
+| 1 | 演化确定性 | 给定初始 $`F[\psi(t_0)]`$，演化路径唯一确定 |
+| 2 | Noether 定理推广 | 泛函场的每个连续对称性对应一个守恒量：$`\frac{d}{dt}Q = 0`$ |
 | 3 | Hamilton 形式 | 可定义泛函 Hamilton 量 $`H = \int \pi \cdot \partial_t\psi\,dx - F`$，满足 $`\frac{dH}{dt} = 0`$ |
-| 4 | 路径积分等价形式 | $\int \mathcal{D}\psi\,e^{iS[\psi]/\hbar}$ 给出量子版本的泛函传播子 |
+| 4 | 路径积分等价形式 | $`\int \mathcal{D}\psi\,e^{iS[\psi]/\hbar}`$ 给出量子版本的泛函传播子 |
 
 ## 边界条件
 
