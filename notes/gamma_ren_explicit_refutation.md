@@ -119,7 +119,6 @@ $$\eta(0)=1-2a$$
 
 1. **真正的"偶扇区伙伴"**：若要给 γ_ren 找"同型严格等式"，对象应是**另一个偶扇区不变量**（如 |D| 的 ζ 在其它整点的值），而非 η。
 2. **接入复振幅旋量模型**：把"超泛函 + 奇场双重结构"接进 thoughtseeds。
-3. **提交**：本文件与 `axiom_IV_note_gamma_renormalization.md`、`axiom_III_IV_gamma_regularity_and_eta.md` 一并待提交（后者 §Part 二 需按本文件修正口径）。
 
 ---
 
