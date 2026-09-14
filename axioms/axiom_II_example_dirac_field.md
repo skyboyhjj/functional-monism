@@ -15,7 +15,7 @@ $$\delta\int F[\psi]\,dt=0$$
 其相关推论：
 
 - 推论 3（拉氏密度形式）：F[ψ] = ∫L(ψ, ∂ψ) dx；
-- 推论 4（路径积分）：$\int\mathcal D\psi\,e^{iS[\psi]/\hbar}$。
+- 推论 4（路径积分）：$`\int\mathcal D\psi\,e^{iS[\psi]/\hbar}`$。
 
 ---
 
@@ -35,7 +35,7 @@ Dirac 拉氏密度、泛函、作用量：
 
 $$\mathcal L_D=\bar\psi\,(i\gamma^\mu\partial_\mu-m)\,\psi,\qquad F[\psi]=\int\mathcal L_D\,dx,\qquad S=\int F\,dt=\int d^4x\,\mathcal L_D$$
 
-其中 γ 矩阵满足 Clifford 代数 $\{\gamma^\mu,\gamma^\nu\}=2\eta^{\mu\nu}I$。
+其中 γ 矩阵满足 Clifford 代数 $`\{\gamma^\mu,\gamma^\nu\}=2\eta^{\mu\nu}I`$。
 
 ---
 
@@ -55,19 +55,19 @@ $$\frac{\delta S}{\delta\bar\psi}=(i\gamma^\mu\partial_\mu-m)\,\psi=0$$
 
 $$\int\mathcal D\psi\,\mathcal D\bar\psi\;e^{\,iS[\psi]/\hbar}$$
 
-对旋量而言，ψ、ψ̄ 是 **Grassmann 变量**，$\mathcal D\psi$ 是 **Berezin 积分**——这正是"费米子为何用反对易数"的路径积分解释。
+对旋量而言，ψ、ψ̄ 是 **Grassmann 变量**，$`\mathcal D\psi`$ 是 **Berezin 积分**——这正是"费米子为何用反对易数"的路径积分解释。
 
 ---
 
 ## 六、精度 γ（形式化观察）
 
-公理 III：$\gamma=\big\|\delta^2F/\delta\psi^2\big\|_{S1}$。因 Dirac 作用量是 ψ 与 ψ̄ 的**双线性型**（对单一 ψ 线性）：
+公理 III：$`\gamma=\big\|\delta^2F/\delta\psi^2\big\|_{S1}`$。因 Dirac 作用量是 ψ 与 ψ̄ 的**双线性型**（对单一 ψ 线性）：
 
 $$\frac{\delta^2F}{\delta\bar\psi\,\delta\psi}=i\gamma^\mu\partial_\mu-m\quad(\text{Dirac operator})$$
 
 即：**自旋场的精度 γ = Dirac 算子的范数**（形式上）。
 
-> **口径补注。** 公理 III 的 γ 用**纯二阶变分** $\delta^2F/\delta\psi^2$；而 Dirac 作用量对单一 ψ 线性，纯二阶变分为零，非零的只有**混合变分** $\delta^2F/(\delta\bar\psi\,\delta\psi)=D$。严格化需把 $(\psi,\bar\psi)$ 合并为联立场，Hessian 取反对角块，此时 $\gamma\approx 2\|D\|$（而非 $\|D\|$），且 Dirac 算子 $D$ 在连续谱下非迹类、迹范数发散——与公理 IV"总曲率 γ 迹发散"自洽。故此处为**形式观察**，待超代数框架严格化。
+> **口径补注。** 公理 III 的 γ 用**纯二阶变分** $`\delta^2F/\delta\psi^2`$；而 Dirac 作用量对单一 ψ 线性，纯二阶变分为零，非零的只有**混合变分** $`\delta^2F/(\delta\bar\psi\,\delta\psi)=D`$。严格化需把 $`(\psi,\bar\psi)`$ 合并为联立场，Hessian 取反对角块，此时 $`\gamma\approx 2\|D\|`$（而非 $`\|D\|`$），且 Dirac 算子 $`D`$ 在连续谱下非迹类、迹范数发散——与公理 IV"总曲率 γ 迹发散"自洽。故此处为**形式观察**，待超代数框架严格化。
 
 ---
 

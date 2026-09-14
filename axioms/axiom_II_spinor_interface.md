@@ -28,11 +28,11 @@ $$\frac{\delta S}{\delta\bar\psi}=0\ \Longrightarrow\ (i\gamma^\mu\partial_\mu-m
 
 即 **Dirac 方程**。
 
-对照公理 II（$\delta\int F[\psi]\,dt=0$）：
+对照公理 II（$`\delta\int F[\psi]\,dt=0`$）：
 
 > **ψ = 场构型，F = Dirac 拉氏量。旋量场是公理 II 的直接实例，不是类比。**
 
-而且公理 II 推论 4 的路径积分 $\int\mathcal D\psi\,e^{iS/\hbar}$，对旋量而言，其中的测度是 **Grassmann 场的 Berezin 积分**——旋量正是该积分"天然要的" ψ。
+而且公理 II 推论 4 的路径积分 $`\int\mathcal D\psi\,e^{iS/\hbar}`$，对旋量而言，其中的测度是 **Grassmann 场的 Berezin 积分**——旋量正是该积分"天然要的" ψ。
 
 ---
 
@@ -55,12 +55,12 @@ $$\frac{\delta S}{\delta\bar\psi}=0\ \Longrightarrow\ (i\gamma^\mu\partial_\mu-m
 
 ### 2.3 精度 γ 对旋量场 = Dirac 算子（形式化观察，待夯实）
 
-公理 III：$\gamma=\big\|\delta^2F/\delta\psi^2\big\|_{S1}$。Dirac 作用量是 ψ 与 ψ̄ 的**双线性型**（对单一 ψ 线性），故
+公理 III：$`\gamma=\big\|\delta^2F/\delta\psi^2\big\|_{S1}`$。Dirac 作用量是 ψ 与 ψ̄ 的**双线性型**（对单一 ψ 线性），故
 
 $$\frac{\delta^2 S_{\mathrm{Dirac}}}{\delta\bar\psi\,\delta\psi}=i\gamma^\mu\partial_\mu-m\quad(\text{Dirac operator})$$
 
 > **形式化观察**：对有自旋的场，"精度 / 曲率"γ 就是**狄拉克算子的范数**。
-> （**口径与标注**：公理 III 的 γ 用**纯二阶变分** $\delta^2F/\delta\psi^2$，而 Dirac 作用量对单一 ψ 线性、**纯二阶变分为零**，非零的只有**混合变分** $\delta^2 S/(\delta\bar\psi\,\delta\psi)=D$；严格化需把 $(\psi,\bar\psi)$ 合并为联立场，Hessian 取反对角块，此时 $\gamma\approx 2\|D\|$（而非 $\|D\|$），且 $D$ 非迹类、迹范数发散（与公理 IV"总曲率 γ 迹发散"自洽）。此外 ψ 为 Grassmann 量，此"二阶变分"是形式的，严格化仍需 Berezin 积分 / 超对称变分。**先记为待夯实，不当定理。**）
+> （**口径与标注**：公理 III 的 γ 用**纯二阶变分** $`\delta^2F/\delta\psi^2`$，而 Dirac 作用量对单一 ψ 线性、**纯二阶变分为零**，非零的只有**混合变分** $`\delta^2 S/(\delta\bar\psi\,\delta\psi)=D`$；严格化需把 $`(\psi,\bar\psi)`$ 合并为联立场，Hessian 取反对角块，此时 $`\gamma\approx 2\|D\|`$（而非 $`\|D\|`$），且 $`D`$ 非迹类、迹范数发散（与公理 IV"总曲率 γ 迹发散"自洽）。此外 ψ 为 Grassmann 量，此"二阶变分"是形式的，严格化仍需 Berezin 积分 / 超对称变分。**先记为待夯实，不当定理。**）
 
 ---
 
