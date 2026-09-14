@@ -132,7 +132,6 @@ $$\mathrm{Ind}_{\text{APS}}=\int_{\text{bulk}}(\cdots)-\frac{1}{2}\big(\eta(0)+h
 
 1. **真正的"偶扇区伙伴"**：γ_ren 的严格等式对象应是**另一个偶扇区不变量**，而非 η（见 `gamma_ren_explicit_refutation.md`）。
 2. **接入复振幅旋量模型**：把"超泛函 + 奇场双重结构"接进 thoughtseeds。
-3. **提交**：本文件与 `axiom_IV_note_gamma_renormalization.md`、`gamma_ren_explicit_refutation.md` 一并待提交（Part 二 口径已按否证文件修正）。
 
 ---
 
