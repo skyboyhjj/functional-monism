@@ -258,6 +258,35 @@ pytest tests/
 
    - 第三方服务 Access Key / Secret Key
 
+## 公理/笔记显示格式自动检查
+
+提交 `axioms/` 或 `notes/` 目录下的 Markdown 前，会自动检查 GitHub 网页端的显示格式问题（LaTeX / MathJax / KaTeX / CommonMark）。工具已集成到 Git pre-commit 钩子，无需手动运行。
+
+**启用（一次性）**：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+**手动运行**：
+
+```bash
+python scripts/check_display_format.py           # 默认检查 axioms/ 与 notes/
+python scripts/check_display_format.py axioms/axiom_I_existence.md
+```
+
+**检查规则**（详见 `scripts/check_display_format.py`）：
+
+| 级别 | 规则 | 修复方式 |
+| :--- | :--- | :--- |
+| ERROR | `$$...$$` 跨行（KaTeX 报 `Can't use function '$' in math mode`） | 合并为单行 |
+| ERROR | 行内公式 `$...$` 含 LaTeX 命令但未反引号包裹（MathJax 解析失败） | 写为 `` $`...`$ `` |
+| ERROR | 加粗 `**` 右闭合失效（右括号后紧跟汉字使右-flanking 失效） | 改用 `<strong>…</strong>` |
+| ERROR | `\operatorname` 宏（GitHub 报 `macros not allowed`） | 改用 `\mathrm` |
+| WARN | `\boxed{` 后冗余 `\;` 空距命令 | 删除 |
+
+发现 ERROR 时钩子退出非零，阻止提交；WARN 仅提示、不拦截。
+
 ***
 
 ## 新对话快速启动
