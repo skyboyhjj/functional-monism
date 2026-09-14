@@ -2,9 +2,7 @@
 
 ## 形式化陈述
 
-$$
-\boxed{\mathcal{E} \equiv F[\psi]}
-$$
+$$\boxed{\mathcal{E} \equiv F[\psi]}$$
 
 **实体 $`\mathcal{E}`$ 等价于泛函 $`F[\psi]`$。**
 
@@ -12,9 +10,7 @@ $$
 
 设 $`\mathcal{H}`$ 为无穷维泛函 Hilbert 空间，$`\psi \in \mathcal{H}`$ 为场构型，$`F: \mathcal{H} \to \mathbb{C}`$ 为作用在 $`\psi`$ 上的泛函。则：
 
-$$
-\forall \mathcal{E} \in \mathfrak{U},\quad \exists!\ F[\psi] \in \mathcal{F},\quad \text{s.t.}\quad \mathcal{E} \cong F[\psi]
-$$
+$$\forall \mathcal{E} \in \mathfrak{U},\quad \exists!\ F[\psi] \in \mathcal{F},\quad \text{s.t.}\quad \mathcal{E} \cong F[\psi]$$
 
 其中：
 
@@ -26,9 +22,7 @@ $$
 
 ## 等价关系的严格定义
 
-$$
-F_1 \cong F_2 \iff \forall \mathcal{O} \in \mathfrak{O},\; \langle F_1 | \mathcal{O} | F_1 \rangle = \langle F_2 | \mathcal{O} | F_2 \rangle
-$$
+$$F_1 \cong F_2 \iff \forall \mathcal{O} \in \mathfrak{O},\; \langle F_1 | \mathcal{O} | F_1 \rangle = \langle F_2 | \mathcal{O} | F_2 \rangle$$
 
 其中 $`\mathfrak{O}`$ 为可观测量算子全集，$`\langle\cdot|\cdot|\cdot\rangle`$ 为泛函内积。
 
