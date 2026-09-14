@@ -22,7 +22,7 @@ $$\min F_{\lambda}\ \longrightarrow\ \min F_{\lambda_0}$$
 
 $$\lambda_k^{(\lambda)}\ \longrightarrow\ \lambda_k^{(\lambda_0)},\qquad \gamma=\sum_k\lambda_k$$
 
-**范围限定。** 本公理仅覆盖**变分型（能量极小型）**对应原理。代数型对应（对易子极限、Weyl 与 Moyal 星积、非交换到交换的算子代数）**不在本公理内**。
+**范围限定。** 本公理仅覆盖<strong>变分型（能量极小型）</strong>对应原理。代数型对应（对易子极限、Weyl 与 Moyal 星积、非交换到交换的算子代数）**不在本公理内**。
 
 ---
 
