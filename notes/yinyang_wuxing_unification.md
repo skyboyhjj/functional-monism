@@ -194,7 +194,7 @@ $$\varepsilon_0=\varepsilon_2\Rightarrow\kappa'=\frac{5-\sqrt5}{8},\qquad \varep
 | 五行相 | κ′ ≥ 0.3455 且 κ−κ′ ≤ 0.6545 | 5 | ℤ₂ |
 | 阴阳相 | κ ≥ 1 且 κ − κ′ ≥ 0.6545 | 2 | ℤ₅ |
 
-👉 图：`figures/yinyang_wuxing_phase_diagram.png`。
+👉 图：![(κ, κ′) 相图与三临界点](figures/yinyang_wuxing_phase_diagram.png)。
 
 ---
 
@@ -246,7 +246,7 @@ $$\gamma=\mathrm{Tr}\big(\mathrm{Hess}\,F\big)$$
 - **对称相的 2 个零模**是 μ = 0 下 ε₀ = 0 的**边缘模**（k = 0 的实 / 虚各一），**非平移零模**（离散环无平移 Goldstone）；
 - **γ 在相变处连续**（细扫：κ → 1 时 γ = 57.6016 → 57.6000 → 57.6304）——凝聚幅度在跨界处趋于零所致；粗扫步长会误看成跳变。阴阳相 γ 最大 ⟹ 最"确定"（Heisenberg 下界）。
 
-👉 图：`figures/yinyang_wuxing_gamma.png`。
+👉 图：![三相的 γ 与相变连续性](figures/yinyang_wuxing_gamma.png)。
 
 ### 7.3 墙动力学
 
@@ -278,7 +278,7 @@ $$\gamma=\mathrm{Tr}\big(\mathrm{Hess}\,F\big)$$
 
 **1 维：crossover；2 维：真 KT 相变。**
 
-👉 图：`figures/yinyang_wuxing_phase_2d.png`、`figures/yinyang_wuxing_vortex.png`。
+👉 图：![2 维图案相图](figures/yinyang_wuxing_phase_2d.png)、![涡旋-反涡旋相位场](figures/yinyang_wuxing_vortex.png)。
 
 ---
 
@@ -310,7 +310,6 @@ $$\gamma=\mathrm{Tr}\big(\mathrm{Hess}\,F\big)$$
 2. **拼上公理 IV 正篇**：把本构造的"连续极限"与 `axiom_IV_correspondence.md` 的 Γ-收敛 / 重整化正式对接；
 3. **接入旋量 / 超泛函**：把 §3 的超荷 Q 与"旋量 = 最小自洽取法"、"超泛函 F: 超流形→ℂ"合流；
 4. **2 维数值**：真正模拟"五行网络"凝聚图案与涡旋解束缚（KT）；
-5. **提交**：本长文入 `notes/`（`notes/yinyang_wuxing_unification.md`），四张图一并。
 
 ---
 
@@ -344,10 +343,10 @@ $$\gamma=\mathrm{Tr}\big(\mathrm{Hess}\,F\big)$$
 
 | 图 | 文件 |
 | :-- | :-- |
-| (κ, κ′) 相图与三临界点 | `figures/yinyang_wuxing_phase_diagram.png` |
-| 三相的 γ 与相变连续性 | `figures/yinyang_wuxing_gamma.png` |
-| 2 维图案相图 | `figures/yinyang_wuxing_phase_2d.png` |
-| 涡旋-反涡旋相位场 | `figures/yinyang_wuxing_vortex.png` |
+| (κ, κ′) 相图与三临界点 | ![(κ, κ′) 相图与三临界点](figures/yinyang_wuxing_phase_diagram.png) |
+| 三相的 γ 与相变连续性 | ![三相的 γ 与相变连续性](figures/yinyang_wuxing_gamma.png) |
+| 2 维图案相图 | ![2 维图案相图](figures/yinyang_wuxing_phase_2d.png) |
+| 涡旋-反涡旋相位场 | ![涡旋-反涡旋相位场](figures/yinyang_wuxing_vortex.png) |
 
 ---
 
