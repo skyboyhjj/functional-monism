@@ -54,7 +54,7 @@ $$\min_{Q}\ \sum_e \frac{L_e}{2D_e}Q_e^2 \qquad\text{s.t.}\quad \sum_{e\ni i}\ep
 
 **流动彻底收敛到最短路**——黏菌"想出"了最优解，而它没有神经元。
 
-👉 图：`figures/physarum_shortestpath.png`。
+👉 图：![黏菌最短路收敛](figures/physarum_shortestpath.png)。
 
 ---
 
@@ -144,4 +144,4 @@ $$\mathcal F_{\text{disc}}[D]\ \longrightarrow\ \mathcal F_{\text{cont}}[D(x)],\
 *时间：2026-09-16*
 *定位：读解延伸——黏菌的形式化（一元化非神经实例）*
 *上游：slime_mold_intelligence.md、yinyang_wuxing_unification.md §4*
-*附图：figures/physarum_shortestpath.png*
+*附图：![黏菌最短路收敛](figures/physarum_shortestpath.png)*
