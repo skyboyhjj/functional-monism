@@ -14,6 +14,8 @@
 
 把黏菌看成一张**管网络**（图）：
 
+![黏菌管网络示意图](figures/physarum_network.png)
+
 - 节点 = 食物 / 交叉点；边 = 原生质管，有长度 L_e、**电导** D_e；
 - **泊肃叶流**：$`Q_e = D_e\,(p_i-p_j)/L_e`$；
 - **守恒**：$`\sum_{e\ni i}\epsilon_e Q_e = S_i`$（源 / 汇）；
@@ -209,4 +211,4 @@ $$\Gamma\text{-}\lim_{a\to0}\mathcal F_a=\mathcal F_{\text{cont}},\qquad D_a^\st
 *时间：2026-09-16*
 *定位：读解延伸——黏菌的形式化（一元化非神经实例）*
 *上游：slime_mold_intelligence.md、yinyang_wuxing_unification.md §4*
-*附图：![黏菌最短路收敛](figures/physarum_shortestpath.png)*
+*附图：![黏菌管网络示意图](figures/physarum_network.png)、![黏菌最短路收敛](figures/physarum_shortestpath.png)*
