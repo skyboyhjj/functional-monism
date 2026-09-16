@@ -153,7 +153,7 @@ $$\limsup_a\mathcal F_a[D_a]\ \le\ \mathcal F_{\text{cont}}[D].$$
 
 由 §7.4（下界）+ §7.5（上界）：
 
-$$\Gamma\text{-}\lim_{a\to0}\mathcal F_a=\mathcal F_{\text{cont}},\qquad\text{且极小元}\ D_a^\star\to D^\star.$$
+$$\Gamma\text{-}\lim_{a\to0}\mathcal F_a=\mathcal F_{\text{cont}},\qquad D_a^\star\to D^\star.$$
 
 （极小元收敛需**等度强制性**：维护项 + $`D\le C`$ 给 $`D_a`$ 的 $`L^1`$ 紧性，耗散 + $`D\ge c`$ 给 $`p_a`$ 的 $`H^1`$ 紧性，已满足。）
 
@@ -201,10 +201,11 @@ $$\Gamma\text{-}\lim_{a\to0}\mathcal F_a=\mathcal F_{\text{cont}},\qquad\text{�
 | 5 | §七"网络 → 连续介质"仅标"结构性" | **已深化**：§七 重写为 Γ-收敛显式证明（下界用透视函数弱下半连续，上界用网格采样恢复），升级为"严格" |
 | 6 | 审核：离散求和缺体积权重，d≥2 时按边求和发散 | **已修订**：§七 改"胞腔口径"（体积 a^d），补收缩标度 D_e=a^(d-1)D(x_e)；标注改为 d=1 严格 / 一般 d 胞腔口径严格、边口径半严格 |
 | 7 | 复核 v1.3：§二维护项缺长度因子；收缩标度应标"假设" | **已修订**：§二维护项改 λΣ_e L_eD_e 并补长度因子说明；§八标出收缩标度 D_e=a^(d-1)D(x_e) 为假设；§7.2 注释同步对齐 |
+| 8 | 渲染体检（check_md.py）：块公式 \text{} 内中文致 MathJax 渲染失败 | **已修**：§7.6 结论公式 \text{且极小元} 的中文移出，改 D_a^*→D^*（语义由括注承接） |
 
 ---
 
-*文档版本：v1.4（§二 维护项补长度因子 + §八 标收缩标度为假设）*
+*文档版本：v1.5（渲染体检：块公式移出 \text{} 内中文）*
 *时间：2026-09-16*
 *定位：读解延伸——黏菌的形式化（一元化非神经实例）*
 *上游：slime_mold_intelligence.md、yinyang_wuxing_unification.md §4*
