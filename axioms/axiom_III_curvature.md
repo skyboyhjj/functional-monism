@@ -18,6 +18,8 @@ $$\|H\|_{\mathcal{S}_1} = \sum_i \lambda_i = \mathrm{Tr}(H)$$
 
 语义上，$`\gamma`$ 度量的是"总认知信息量"——所有认知维度曲率的总和，而非单一最敏感方向的曲率。
 
+> **连续极限边界（衔接公理 IV）**：上式 $`\gamma`$ 是有限维（离散化表象）下的量。连续极限（无限维）下 $`H`$ 未必迹类——如 Dirac 场的 $`\gamma = 2\|D\|_{\mathcal{S}_1} = \infty`$（$`D`$ 非迹类）——总曲率作为外延量发散，须经重整化提取有限部分 $`\gamma_{\text{ren}} = \zeta_{D^2}(-1/2)`$。详见 [公理 IV](axiom_IV_correspondence.md) 及其[补注](../notes/axiom_IV_note_gamma_renormalization.md)。
+
 ## 二阶泛函导数的坐标表示
 
 在离散化表象下，将 $`\psi`$ 展开为基函数 $`\{\phi_i\}`$ 的线性组合 $`\psi = \sum_i c_i \phi_i`$，则：
