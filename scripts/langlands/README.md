@@ -33,6 +33,6 @@ python demo_xxx.py
 | `demo_positivity.py` | 「定号」形态：自卷积 ⟹ 正定核、screw 核、交错型对照 | numpy |
 | `demo_tp.py` | 「序 ⟹ 定号」（路 b）：Toeplitz 核全正、Pólya 定理 | numpy + mpmath |
 | `demo_R.py` | R 失败记录 0/6：谱密度建在素数测度上 | numpy + mpmath |
-| `demo_R_success.py` | R 修正版 10/10：对象建在 ψ(e^t)−e^t 上，谱峰 ⟺ ζ 零点 | numpy |
+| `demo_R_success.py` | R 修正版 10/10：对象建在 ψ(e^t)−e^t 上，谱峰落在 ζ 零点处（数值） | numpy |
 | `demo_R2.py` | R2：函数域 91/91 + 数域矩 Σγ^{2n} 发散 | numpy + mpmath |
 | `demo_axiomII.py` | 公理 II：Θ=log Frobenius 谱落在 Re=½log q（107/107） | numpy |
