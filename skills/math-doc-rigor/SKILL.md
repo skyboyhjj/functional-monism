@@ -27,27 +27,23 @@ description: 数学/理论物理类文档的严谨化与规范化工作流。当
 
 流程是顺序的，但允许回退——第 2 步算出反例时，回到第 1 步改写。
 
-### 第 0 步：环境准备（首次）
+### 第 0 步：环境准备
 
-依赖：`markdown2`、`weasyprint`（Python）+ `mathjax-full`（Node）。
+依赖：`markdown2`、`weasyprint`、`fonttools`（Python）+ `mathjax-full`（Node）。
 
-**Linux / macOS**：
+- **Linux / macOS**：`bash scripts/setup.sh`
+- **Windows**：`powershell -ExecutionPolicy Bypass -File scripts/setup.ps1`
 
-```bash
-bash scripts/setup.sh
-```
+> ⚠️ **沙箱/容器环境每次会话都会重置 pip 依赖。** 若 `md2pdf.py` 报
+> `No module named 'markdown2'`（或静默回退、报"成功 0 失败 1"），先重装：
+> `python3 -m pip install -q markdown2 weasyprint fonttools`
 
-**Windows（PowerShell）**：
+MathJax 装在**技能目录之外**（技能目录内不能有 `node_modules`：体积大、文件数多会导致注册失败），
+用 `MATHJAX_NODE_PATH` 指定路径；不设时默认在脚本同级的 `node_modules` 找。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
-```
-
-脚本会检测并安装缺失依赖，并回报 MathJax 的 `node_modules` 路径（后续 `md2pdf.py` 需要它）。
-
-> **Windows 特别说明**：`weasyprint` 依赖 GTK3 运行时（`libgobject-2.0-0.dll`）。
-> 若 `setup.ps1` 报 weasyprint 导入失败，请先安装 GTK3（MSYS2：`pacman -S mingw-w64-x86_64-gtk3`），
-> 或将 `PATH` 指向已安装的 GTK 库目录；改用 WSL/Linux 环境可完全绕开此依赖。
+> **Windows 提示**：`weasyprint` 在 Windows 上还需 GTK3 运行库，否则报 `libgobject-2.0-0.dll` 找不到。
+> **不必强行装 GTK**——`md2pdf.py` 在 weasyprint 不可用时会**自动回退到 headless Edge/Chrome**（`--print-to-pdf`），
+> 同样能出公式保真的 PDF（打印时会在文件名后括注实际引擎）。装 GTK3 只是让 weasyprint 这条路径也可用。
 
 ### 第 1 步：草拟或读解
 
@@ -84,9 +80,15 @@ powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
 python3 scripts/check_md.py 文档.md
 ```
 
-检查项见 `references/render-rules.md`。重点：**数学环境零中文**、**裸 `$...$` 每行至多 1 个（反引号写法不限）**、
-**无风险宏**（tag / boxed / overset / xrightarrow 等）、行内公式用反引号写法。
-有问题就修，直到体检干净。
+检查项见 `references/render-rules.md`。重点：**数学环境零中文**、**每行至多 1 个行内公式**、
+**无风险宏**（tag / boxed / overset / xrightarrow 等）、行内公式用反引号写法、
+**无缺字形字符**（emoji 在 PDF 字体栈里没有字形，见规则 10）、
+**粗体 `**` 无 flanking 断裂**（见规则 11）。
+有问题就修，直到"合计隐患: 0"。
+
+> 脚本自带回归夹具 `scripts/tests/regression_fixture.md`：应当报出 **2 类隐患**
+> （缺字形 2 种 + 粗体断裂 1 处），且对 `2 ** 3`、代码块、`中文**粗体**中文` 零误报。
+> 改动 `check_md.py` 后跑一遍，即可确认没改坏。
 
 ### 第 5 步：导出与打包
 
@@ -132,6 +134,6 @@ MATHJAX_NODE_PATH=<setup 回报的路径> python3 scripts/md2pdf.py --outdir pdf
 - `references/rigor-levels.md` — 三层标注的定义、判定方法与常见误用
 - `references/render-rules.md` — LaTeX 在 GitHub / PDF 的渲染安全清单
 - `references/archive-conventions.md` — 仓库分层与提交规范
-- `scripts/setup.sh` — 环境准备
+- `scripts/setup.sh` / `scripts/setup.ps1` — 环境准备（Linux·macOS / Windows）
 - `scripts/check_md.py` — 渲染安全体检
-- `scripts/md2pdf.py` + `scripts/tex2svg.js` — 公式保真导出 PDF
+- `scripts/md2pdf.py` + `scripts/tex2svg.js` — 公式保真导出 PDF（weasyprint 或 headless 浏览器）
