@@ -96,6 +96,7 @@ thoughtseeds_model-main/
 02-泛函分析/
 03-泛函一元论/
 04-五行/
+05-朗兰兹纲领/
 
 # 例外：发布到 notes/figures 的图片（定向放行）
 !notes/figures/*.png
