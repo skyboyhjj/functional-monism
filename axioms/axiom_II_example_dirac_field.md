@@ -14,8 +14,10 @@ $$\delta\int F[\psi]\,dt=0$$
 
 其相关推论：
 
-- 推论 3（拉氏密度形式）：F[ψ] = ∫L(ψ, ∂ψ) dx；
+- 推论 3（Hamilton 形式）：$`H=\int \pi\cdot\partial_t\psi\,dx - F`$；
 - 推论 4（路径积分）：$`\int\mathcal D\psi\,e^{iS[\psi]/\hbar}`$。
+
+（其中"拉氏密度形式" $`F[\psi]=\int\mathcal L[\psi,\partial_t\psi,\partial_x\psi]\,dx`$ 属公理 II"演化方程的一般形式"节，**非编号推论**，且 $`dx`$ 为空间积分。）
 
 ---
 
