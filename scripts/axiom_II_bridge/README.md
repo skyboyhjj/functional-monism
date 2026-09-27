@@ -14,7 +14,7 @@ python where_is_kappa.py
 
 | 脚本 | 内容 | 关键校验点 |
 | :-- | :-- | :-- |
-| `demo_gongli2_bridge.py` | 时间-1 映射；阻尼 γ（保守↔耗散） | φ₁(θᵢ)=θ_{R(i)}；自由能 F 单调降；γ=0 守恒、γ>0 耗散 |
+| `demo_gongli2_bridge.py` | 时间-1 映射；阻尼 δ（保守↔耗散） | φ₁(θᵢ)=θ_{R(i)}；自由能 F 单调降；δ=0 守恒、δ>0 耗散 |
 | `demo_circle_dissipation.py` | 拓扑障碍 H¹(S¹)=ℝ；Kuramoto / Stuart-Landau | Kuramoto 锁相约 30° |
 | `verify_wuxing_phase.py` | 五行相位检验 | 生/克/侮/及母=R¹..R⁴；生∪克=K₅；特征值单位圆、det=+1 |
 | `assemble_wuxing_interoception.py` | 组装 κz̄⁴ + 五次饱和 | 仅 κ 项发散；配饱和后锁相，距 72° 倍数随 κ 而定（κ=2 约 1.4°、κ=4 约 0.1°） |

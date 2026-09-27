@@ -49,7 +49,7 @@ $$\phi_t(\theta)=\theta+72^\circ t,\qquad \phi_1=R.$$
 | 阴阳五行（$`R`$） | 圆旋转 $`\dot\theta=\omega`$ | **保守**：无全局势（$`F(2\pi)-F(0)=-6.283\ne0`$）、等距、可逆 |
 | 内感受（自由能 $`F`$） | 梯度流 $`\dot s=-\nabla F`$ | **耗散**：有势、$`F`$ 单调降、趋向吸引子、不可逆 |
 
-保守↔耗散的桥 = 阻尼 $`\gamma`$：$`\gamma=0`$ 守恒（辛欧拉格式保能量），$`\gamma>0`$ 耗散（衰减到吸引子）。
+保守↔耗散的桥 = 阻尼 $`\delta`$：$`\delta=0`$ 守恒（辛欧拉格式保能量），$`\delta>0`$ 耗散（衰减到吸引子）。
 
 > 实际上圆旋转**不是**梯度流（势 $`F=-\omega\theta`$ 在圆上不单值）；自由能流是梯度流。⟹ **"离散生克"连续化成"保守流"，"内稳态"本身是"耗散流"——两者不是同一种演化。** 这才是"桥"里真正卡住的地方。
 
@@ -64,7 +64,7 @@ $$\phi_t(\theta)=\theta+72^\circ t,\qquad \phi_1=R.$$
 
 > **边界说明（"有势"须限定一维）**：$`H^1(\mathbb R)=0`$ 只保证**一维**自治流都是梯度流；$`\mathbb R^n\,(n\ge2)`$ 上存在大量非梯度流（如哈密顿流、含旋转的向量场），"一切流都有势"不成立。此处"实线"严格指一维。
 
-**解法 A（外场）**：加梯度项 $`\dot\theta=\omega-\gamma\sin\theta`$（有势 $`F=-\gamma\cos\theta`$），$`\gamma>\omega`$ 时出现稳定不动点 $`\theta^*=\arcsin(\omega/\gamma)`$——代价是**外场 γ**（打破旋转对称）。
+**解法 A（外场）**：加梯度项 $`\dot\theta=\omega-\delta\sin\theta`$（有势 $`F=-\delta\cos\theta`$），$`\delta>\omega`$ 时出现稳定不动点 $`\theta^*=\arcsin(\omega/\delta)`$——代价是**外场 δ**（打破旋转对称）。
 
 **解法 B（补径向维度，Hopf / Stuart-Landau）**：把圆"加厚"成复平面 $`\mathbb C=\mathbb R_{\ge0}\times S^1`$（幅度 × 相位）：
 
@@ -107,9 +107,9 @@ $$\dot\theta=\omega-\kappa r^3\sin(5\theta),\qquad \dot r=\mu r-r^3+\kappa r^4\c
 
 **但单独的 $`\kappa\bar z^4`$ 会发散**：四次项在 $`r`$ 方程里是 $`+\kappa r^4\cos5\theta`$，**无饱和**，当 $`\cos5\theta>0`$ 时把 $`r`$ 推爆（复 GL 里 $`m`$ 次共振项 $`\bar z^{m-1}`$ 破稳的经典性质）。
 
-**配五次饱和 $`-\gamma|z|^4z`$ 后成立**：
+**配五次饱和 $`-\delta|z|^4z`$ 后成立**：
 
-| κ | γ | 终态 |
+| κ | δ | 终态 |
 | :-- | :-- | :-- |
 | 2.0 | 0.0 | ✗ 发散 |
 | 2.0 | 1.0 | 锁相，距 72° 倍数约 $`1.4°`$ |
@@ -123,7 +123,7 @@ $$\dot\theta=\omega-\kappa r^3\sin(5\theta),\qquad \dot r=\mu r-r^3+\kappa r^4\c
 | :-- | :-- |
 | 加维 | $`S^1\to\mathbb C`$（圆上加径向） |
 | 选耦合 | 必须 $`\mathbb Z_5`$-等变（否则破对称） |
-| 配饱和 | 必须加 $`-\gamma\lvert z\rvert^4z`$（否则发散） |
+| 配饱和 | 必须加 $`-\delta\lvert z\rvert^4z`$（否则发散） |
 | 容忍偏移 | 钉住点有偏移 $`\arcsin(\omega/\kappa r^3)/5`$（$`\kappa\to\infty`$ 才 exact 72°） |
 
 ## 6. κ 从哪来：U(1)→Z₅，离散性的接口（公理 III）

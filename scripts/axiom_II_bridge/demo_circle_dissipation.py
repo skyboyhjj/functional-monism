@@ -3,7 +3,7 @@
 先算后说，四步：
 1. 拓扑障碍：圆旋转 φ_t(θ)=θ+ωt，绕一圈势净增 2πω ≠ 0 ⟹ 无单值势
    （上同调：H^1(S^1)=R≠0，存在"闭但非恰当"的旋转 1-形式 dθ）。
-2. 圆上引入梯度项 → Kuramoto 锁相 θ'=ω-γsinθ：γ>ω 时圆上出现吸引子。
+2. 圆上引入梯度项 → Kuramoto 锁相 θ'=ω-δsinθ：δ>ω 时圆上出现吸引子。
 3. Stuart-Landau：z'=(μ+iω)z-|z|²z，z=re^{iθ}
    → 相位 θ'=ω（守恒/圆旋转）+ 幅度 r'=μr-r³（耗散/实线梯度流）
    ⟹ 圆上的耗散化 = 补径向维度：C = R_{≥0} × S^1（幅度×相位）。
@@ -24,18 +24,18 @@ print("  ⟹ 圆上不存在单值势 ⟹ 纯旋转不是梯度流 ⟹ 纯圆不
 
 print()
 print("=" * 72)
-print("2. 圆上引入梯度项 → Kuramoto 锁相 θ' = ω - γ sinθ")
+print("2. 圆上引入梯度项 → Kuramoto 锁相 θ' = ω - δ sinθ")
 print("=" * 72)
-for gamma in (0.5, 2.0):
-    locked = gamma > omega
-    th_star = np.arcsin(omega / gamma) if locked else None
+for delta in (0.5, 2.0):
+    locked = delta > omega
+    th_star = np.arcsin(omega / delta) if locked else None
     th, dt = -2.0, 0.01
     for _ in range(20000):
-        th = th + dt * (omega - gamma * np.sin(th))
+        th = th + dt * (omega - delta * np.sin(th))
     tag = f"θ*={np.rad2deg(th_star):.1f}°(吸引子)" if locked else "不收敛(自由旋转)"
-    print(f"  γ={gamma}: {'锁相' if locked else '自由旋转'}  "
+    print(f"  δ={delta}: {'锁相' if locked else '自由旋转'}  "
           f"θ→{np.rad2deg(th) % 360:.1f}°，{tag}")
-print("  ⟹ 加梯度项(-γsinθ)后，γ>ω 时圆上出现吸引子（耗散）；桥 = 外加强度 γ。")
+print("  ⟹ 加梯度项(-δsinθ)后，δ>ω 时圆上出现吸引子（耗散）；桥 = 外加强度 δ。")
 
 print()
 print("=" * 72)
