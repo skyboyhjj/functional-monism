@@ -87,4 +87,4 @@ $$\lambda_i=\epsilon_i^{-2}\qquad\Longrightarrow\qquad\gamma=\mathrm{Tr}(H)=\sum
 *时间：2026-09-27*
 *定位：`notes/` · 公理 III 提法之三（信息面）*
 *上游：`notes/axiom_II_bridge_phase_amplitude.md` §6（κ 的落点）*
-*配套：公理 III 侦察线脚本（explore_gongli3_precision.py 等）*
+*配套：公理 III 侦察线脚本（[explore_gongli3_precision.py](../scripts/axiom_III/explore_gongli3_precision.py) 等）*
