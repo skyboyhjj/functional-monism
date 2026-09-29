@@ -25,7 +25,7 @@ python explore_gongli3_h1_integral.py  # §6 整数化 · 度数版
 | `verify_euler_obstruction.py` | §2 | A 障碍分级表；B $`\pi_3(S^2)=\mathbb Z`$（Hopf 不变量 = 环绕数 = 1.0000）；C 秩 2 特殊性 |
 | `verify_monopole_bundle.py` | §3 | 任意纤维对环绕数 = ±1；绕数 = 陈数；$`\chi`$ 与截面 |
 | `verify_wuyang_patch.py` | §4 | A 差为纯规范、同一曲率；B 差/转移函数绕数同；C ℝ-级多值；D $`\int F=2\pi c`$；E $`\mathbb Z_2`$ 和乐 |
-| `verify_section3_remaining.py` | §5 | 夹具（Hop 链）；环绕数随分辨率收敛；投影符号随定向翻转；四名字对照（和乐/2π 差因子 2）；Berry 两级 |
+| `verify_section3_remaining.py` | §5 | 夹具（Hopf 链）；环绕数随分辨率收敛；投影符号随定向翻转；四名字对照（和乐/2π 差因子 2）；Berry 两级 |
 | `explore_gongli3_h1_integral.py` | §6 | A 度数 = 绕数 = $`sL/2\pi`$；B 两级（ℝ-级 / ℤ-级）；C 可离散化 ⟺ 旋转数有理；D `06` 范例 |
 
 ## 诚实边界
