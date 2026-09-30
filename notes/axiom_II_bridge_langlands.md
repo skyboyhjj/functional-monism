@@ -53,11 +53,13 @@
 
 ## 四、Connes 路线 = 这座桥
 
-$$\Delta=H(1+H)$$
+$$\Delta=H(1+H)=H^{2}+H$$
 
-- $`H=x\partial_x`$（scaling 流）= **相位端**；
-- $`\Delta`$ 的**自伴性／谱实**（= 幅度端／定号）$`\Longleftrightarrow`$ RH；
-- 强形式：$`-W_\mathbb R(f\star f^*)\ge\mathrm{Tr}(\vartheta(f)\,\mathbf S\,\vartheta(f)^*)`$，$`\mathbf S`$ = Sonin 投影（**archimedean，已证**）。
+即 **自伴部分 $`H^{2}`$（幅度／定号）＋ 斜自伴部分 $`H`$（相位／流）**。
+
+- $`H=x\partial_x`$（scaling 流）= **相位端**；无权时 $`H`$ 斜自伴（$`H^{*}=-H`$），谱在**虚轴**，其周期轨道即 $`\zeta`$-cycle 的圆；
+- $`\Delta`$ 的**吸收谱落回实轴** $`\Longleftrightarrow`$ RH —— 这是 **Hilbert–Pólya 式目标形态**：Connes 为保证本征函数落在 $`L^2`$，给 Haar 测度**加了权**，**正因这个权，算子 $`D`$ 不再自伴**，零点是它的**吸收谱**（absorption spectrum）；
+- 强形式：$`-W_\mathbb R(f\star f^*)\ge\mathrm{Tr}(\vartheta(f)\,\mathbf S\,\vartheta(f)^*)`$，$`\forall f\in C_c^\infty(\mathbb R_+^*)`$，cutoff $`\lambda=1`$，$`\mathbf S`$ = **Sonin 空间投影**（$`\perp P_\lambda,\widehat P_\lambda`$）（**archimedean，已证**）。
 
 > ⟹ **缺口 = 桥的合拢**：把**全部 places**（含 p-adic）的 scaling 合成一个自伴算子。两端各自好（相位端 = scaling／$`\zeta`$-cycle；幅度端 = archimedean 正性），**合起来未证** —— 这就是朗兰兹卡住的地方。
 
