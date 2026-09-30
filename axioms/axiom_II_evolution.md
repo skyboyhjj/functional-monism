@@ -30,6 +30,8 @@ $$\frac{\delta F}{\delta \psi(t)} = 0,\quad \forall t \in [t_0, t_1]$$
 
 即：泛函场在演化路径上的每一点处，其泛函导数为零——这是泛函版本的"稳态条件"。
 
+> **口径注（特例）**：上式 $`\frac{\delta F}{\delta \psi(t)} = 0`$ 仅在 $`F`$ 不显含 $`\partial_t\psi`$ 时成立；当 $`F`$ 显含时间导数时，须改用下一节的完整泛函 Euler-Lagrange 方程。
+
 ## 演化方程的一般形式
 
 引入泛函 Lagrangian 密度 $`\mathcal{L}[\psi, \partial_t\psi, \partial_x\psi]`$：
@@ -48,10 +50,12 @@ $$\frac{\partial\mathcal{L}}{\partial\psi} - \partial_t \frac{\partial\mathcal{L
 
 | 序号 | 推论 | 数学表达 |
 |------|------|----------|
-| 1 | 演化确定性 | 给定初始 $`F[\psi(t_0)]`$，演化路径唯一确定 |
+| 1 | 演化确定性 | 给定初始 $`\psi(t_0)`$（一阶方程）或 $`\psi(t_0),\partial_t\psi(t_0)`$（二阶方程），演化路径唯一确定 |
 | 2 | Noether 定理推广 | 泛函场的每个连续对称性对应一个守恒量：$`\frac{d}{dt}Q = 0`$ |
 | 3 | Hamilton 形式 | 可定义泛函 Hamilton 量 $`H = \int \pi \cdot \partial_t\psi\,dx - F`$，满足 $`\frac{dH}{dt} = 0`$ |
 | 4 | 路径积分等价形式 | $`\int \mathcal{D}\psi\,e^{iS[\psi]/\hbar}`$ 给出量子版本的泛函传播子 |
+
+> **口径注（阶数）**：「演化确定性」取决于演化方程的**阶数**，而非变分原理本身——一阶（Dirac 型 $`i\partial_t\psi = H\psi`$）只需 $`\psi(t_0)`$；一般二阶 $`L`$ 需 $`(\psi(t_0),\,\partial_t\psi(t_0))`$ 两个初值。
 
 ## 边界条件
 
