@@ -143,7 +143,7 @@ $$\gamma=\big\lVert J_A^{\mathsf T}-J_A\big\rVert=\lVert\mathrm{curl}A\rVert=2\,
 | :-- | :-- |
 | 变分 $`\Rightarrow`$ 内感受方程（含洛伦兹项） | **严格**（标准 E–L 结果） |
 | $`A\to A+\nabla\chi`$ 不改方程（规范不变） | **严格** |
-| 环积分 $`\oint A\cdot d\psi=\mathrm{curl}A\cdot\text{Area}`$ | **严格** |
+| 环积分 $`\oint A\cdot d\psi=\mathrm{curl}A\cdot\mathrm{Area}`$ | **严格** |
 | $`\mathrm{curl}A=0`$ 当且仅当 $`A`$ 可写成势差 | **严格** |
 | 轨迹定性改变（$`\mathrm{curl}A=0`$ 是一维；$`\neq0`$ 进入二维环流） | **半严格（数值）** |
 | $`\gamma=\lVert\mathrm{curl}A\rVert`$；文章原型 $`\gamma\equiv0`$ | **严格**（定义 ＋ 数值） |
@@ -166,7 +166,7 @@ $$\gamma=\big\lVert J_A^{\mathsf T}-J_A\big\rVert=\lVert\mathrm{curl}A\rVert=2\,
 | B | 规范不变：轨迹差 | 5.0e−12 |
 | C | 势型 $`(w=0)`$ | $`\max\lvert y\rvert=0`$，面积 = 0 |
 | C | 非势差 $`(w=1.2)`$ | $`\max\lvert y\rvert=0.999`$，面积 = 7.11 |
-| D | 环积分 $`(r_0=1)`$ | 3.769911，与 $`\text{curl}\cdot\text{Area}`$ 差 −1.6e−10 |
+| D | 环积分 $`(r_0=1)`$ | 3.769911，与 $`\mathrm{curl}\cdot\mathrm{Area}`$ 差 −1.6e−10 |
 | D | 环积分 ＋ $`\nabla\chi`$ 后不变 | 差 −3.1e−15 |
 | E | 文章原型 $`\max\lvert\mathrm{curl}A\rvert`$ | 1.1e−10 ⟹ $`\gamma=0`$ |
 
