@@ -99,7 +99,7 @@ $$\Delta=H(1+H)=H^{2}+H$$
 | RH $`\Longleftrightarrow`$ $`\sigma`$ 钉 $`1/2`$、$`t`$ 自由 | **严格**（重述） |
 | 显式公式 = 等式 | **严格**（数值 $`7.5\times10^{-15}`$） |
 | $`\prod`$ 发散 | **严格**（数值） |
-| $`\Delta=H(1+H)\Longleftrightarrow`$ RH（Connes） | **严格**（Connes 的等价） |
+| RH $`\Longleftrightarrow`$ Connes 算子的**吸收谱**落回实轴 | **结构性**（重述；Connes 已证的是迹公式＝等式，**正性／实谱未证**） |
 | 「相位端 = scaling／$`\zeta`$-cycle、幅度端 = archimedean 正性」 | **结构性**（本步判读） |
 | 「RH = 极限环」 | **结构性**（重述 ＋ 类比；非新命题） |
 
