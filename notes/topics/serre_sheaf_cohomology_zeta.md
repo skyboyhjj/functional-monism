@@ -452,7 +452,7 @@ Theorem 1.2 里那个商，是**除以 $`\zeta(1/2+is)`$ 生成的理想**。也
 | 情形 | 状态 |
 | :-- | :-- |
 | archimedean 单点 | **已证**（Connes–Consani 2021：正性 ＝ 缩放作用在截断投影余上的迹） |
-| semilocal（含 archimedean 的有限 places 集） | 化为**确定矩问题**，测度 ＝ $`\prod_{p\in S}|L_p(1/2+it)|^2`$（有限时正性「免费」） |
+| semilocal（含 archimedean 的有限 places 集） | 化为**确定矩问题**，测度 ＝ $`\prod_{p\in S}\lvert L_p(1/2+it)\rvert^2`$（有限时正性「免费」） |
 | **全部 places** | **未合** —— 缺的是「**正性的无穷加法**」（非负性不被无穷加法保持） |
 
 ### 5.6 判定表（严格度）
