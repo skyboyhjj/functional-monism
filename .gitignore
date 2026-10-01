@@ -97,6 +97,7 @@ thoughtseeds_model-main/
 03-泛函一元论/
 04-五行/
 05-朗兰兹纲领/
+10-五条形式标准/
 
 # 例外：发布到 notes/figures 的图片（定向放行）
 !notes/figures/*.png
