@@ -1,6 +1,6 @@
 # 局部 → 整体 · 示性类 · 验证脚本
 
-支撑 [local_global_characteristic_classes.md](../../notes/local_global_characteristic_classes.md) 数值结论的 6 个独立单文件脚本，均为「先算后说」——运行即打印结论，无需输入参数。
+支撑 [local_global_characteristic_classes.md](../../notes/topics/local_global_characteristic_classes.md) 数值结论的 6 个独立单文件脚本，均为「先算后说」——运行即打印结论，无需输入参数。
 
 ## 怎么跑
 

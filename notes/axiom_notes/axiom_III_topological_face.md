@@ -78,5 +78,5 @@ $$X^\flat\ \text{exact}\iff\big(X^\flat\ \text{closed}\ \wedge\ H^1=0\big).$$
 *文档版本：v1.0*
 *时间：2026-09-27*
 *定位：`notes/` · 公理 III 派生拓扑面*
-*上游：axiom_III_precision_quotient.md（精度结构）、../axioms/axiom_III_curvature.md*
-*配套脚本：[demo_topological_face.py](../scripts/axiom_III/demo_topological_face.py)*
+*上游：axiom_III_precision_quotient.md（精度结构）、../../axioms/axiom_III_curvature.md*
+*配套脚本：[demo_topological_face.py](../../scripts/axiom_III/demo_topological_face.py)*

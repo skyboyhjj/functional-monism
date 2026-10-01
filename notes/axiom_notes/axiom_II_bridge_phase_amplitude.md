@@ -2,7 +2,7 @@
 
 **——把"公理 II 内部缺失的桥"读成"相位↔幅度的复结构"**
 
-> **定位**：`notes/` 级长文 · **公理 II 补篇**。与《阴阳五行 · 一元化构造》（`notes/yinyang_wuxing_unification.md`）并列——那一篇是公理 II 的**象数实例**，本篇是它的**桥（相位↔幅度）**。
+> **定位**：`notes/` 级长文 · **公理 II 补篇**。与《阴阳五行 · 一元化构造》（`notes/instances/yinyang_wuxing_unification.md`）并列——那一篇是公理 II 的**象数实例**，本篇是它的**桥（相位↔幅度）**。
 >
 > **版本**：v1.0　**时间**：2026-09-27
 >
@@ -147,7 +147,7 @@ $$\dot\theta=\omega-\kappa r^3\sin(5\theta),\qquad \dot r=\mu r-r^3+\kappa r^4\c
 
 ⟹ **κ 不能在公理 II 内部推出**：$`U(1)`$ 是公理 II 连续演化的对称，而 $`\bar z^4`$ 在它**外面**。**公理 II 的桥要搭，必须借公理 III——精确地说，借它的「精度商」提法。**
 
-**公理 III 落点**：公理 III 现有**三提法**——一、曲率版（有限维 $`\gamma=\mathrm{Tr}\,H`$，见 [axiom_III_curvature](../axioms/axiom_III_curvature.md)）；二、重整化版（连续极限 $`\gamma_{\text{ren}}=\zeta_{D^2}(-1/2)`$，见 [axiom_III_IV_gamma_regularity_and_eta](axiom_III_IV_gamma_regularity_and_eta.md)）；三、精度商版（信息面 $`\gamma=\sum_i\epsilon_i^{-2}`$，见 [axiom_III_precision_quotient](axiom_III_precision_quotient.md)）；另有**派生**拓扑面，见 [axiom_III_topological_face](axiom_III_topological_face.md)。本节 $`\kappa`$ 精确接入**提法三**：
+**公理 III 落点**：公理 III 现有**三提法**——一、曲率版（有限维 $`\gamma=\mathrm{Tr}\,H`$，见 [axiom_III_curvature](../../axioms/axiom_III_curvature.md)）；二、重整化版（连续极限 $`\gamma_{\text{ren}}=\zeta_{D^2}(-1/2)`$，见 [axiom_III_IV_gamma_regularity_and_eta](axiom_III_IV_gamma_regularity_and_eta.md)）；三、精度商版（信息面 $`\gamma=\sum_i\epsilon_i^{-2}`$，见 [axiom_III_precision_quotient](axiom_III_precision_quotient.md)）；另有**派生**拓扑面，见 [axiom_III_topological_face](axiom_III_topological_face.md)。本节 $`\kappa`$ 精确接入**提法三**：
 
 | 提法 | 与 κ 的关系 |
 | :-- | :-- |
@@ -198,4 +198,4 @@ $$\dot\theta=\omega-\kappa r^3\sin(5\theta),\qquad \dot r=\mu r-r^3+\kappa r^4\c
 
 ---
 
-**验证脚本**：本长文数值结论（φ₁=R、Kuramoto 锁相 30°、生∪克=K₅、组装锁相、κ 破缺 U(1)→Z₅ 等）的可复算脚本与对照表，见 [公理 II 的桥 · 验证脚本](../scripts/axiom_II_bridge/README.md)。
+**验证脚本**：本长文数值结论（φ₁=R、Kuramoto 锁相 30°、生∪克=K₅、组装锁相、κ 破缺 U(1)→Z₅ 等）的可复算脚本与对照表，见 [公理 II 的桥 · 验证脚本](../../scripts/axiom_II_bridge/README.md)。

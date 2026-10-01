@@ -1,6 +1,6 @@
 # 公理 II 的桥 · 验证脚本
 
-> 配套长文：[公理 II 的桥：相位↔幅度的桥](../../notes/axiom_II_bridge_phase_amplitude.md)
+> 配套长文：[公理 II 的桥：相位↔幅度的桥](../../notes/axiom_notes/axiom_II_bridge_phase_amplitude.md)
 
 第一轮（下 5 个）仅依赖 numpy；第二轮（桥·组装，下 3 个）另需 scipy、mpmath。逐个运行：
 
@@ -26,9 +26,9 @@ python where_is_kappa.py
 
 | 脚本 | 配套文档 | 核验内容 | 依赖 |
 | :-- | :-- | :-- | :-- |
-| `verify_three_instances_gap.py` | [统一性检验（缺口是不是 W）](../../notes/axiom_II_bridge_gap_W.md) | 五行（相生=矢势型、无耗散）；朗兰兹（显式公式=等式、局部积发散） | numpy + mpmath |
-| `assemble_bridge_C.py` | [组装（内感受幅度×五行相位）](../../notes/axiom_II_bridge_assembly_C.md) | 2×2 分解定理 / 生成元 / 三态 / 不免费 / Z₅ 钉相 | numpy + scipy |
-| `langlands_into_the_bridge.py` | [朗兰兹接桥](../../notes/axiom_II_bridge_langlands.md) | 极限环 / 零点相位谱 / 显式公式 / 局部积发散 | numpy + mpmath |
+| `verify_three_instances_gap.py` | [统一性检验（缺口是不是 W）](../../notes/axiom_notes/axiom_II_bridge_gap_W.md) | 五行（相生=矢势型、无耗散）；朗兰兹（显式公式=等式、局部积发散） | numpy + mpmath |
+| `assemble_bridge_C.py` | [组装（内感受幅度×五行相位）](../../notes/axiom_notes/axiom_II_bridge_assembly_C.md) | 2×2 分解定理 / 生成元 / 三态 / 不免费 / Z₅ 钉相 | numpy + scipy |
+| `langlands_into_the_bridge.py` | [朗兰兹接桥](../../notes/axiom_notes/axiom_II_bridge_langlands.md) | 极限环 / 零点相位谱 / 显式公式 / 局部积发散 | numpy + mpmath |
 
 ```bash
 python verify_three_instances_gap.py

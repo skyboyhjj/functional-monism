@@ -1,6 +1,6 @@
 # 朗兰兹纲领 · 验证脚本
 
-支撑 [langlands_program_unification.md](../../notes/langlands_program_unification.md) 数值结论的 16 个独立单文件脚本。
+支撑 [langlands_program_unification.md](../../notes/instances/langlands_program_unification.md) 数值结论的 16 个独立单文件脚本。
 
 ## 怎么跑
 

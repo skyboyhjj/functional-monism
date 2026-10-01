@@ -6,7 +6,7 @@
 >
 > **版本**：v1.0　**时间**：2026-09-27
 >
-> **来源**：2026-09-27「公理 III 侦察线」（配合 `notes/axiom_II_bridge_phase_amplitude.md` §6 的 κ 落点）。
+> **来源**：2026-09-27「公理 III 侦察线」（配合 `notes/axiom_notes/axiom_II_bridge_phase_amplitude.md` §6 的 κ 落点）。
 
 ---
 
@@ -18,7 +18,7 @@
 
 | # | 提法 | 面 | 核心 | 文档 |
 | :-- | :-- | :-- | :-- | :-- |
-| **一** | 曲率版（有限维） | 几何 | $`\gamma=\lVert\delta^2F/\delta\psi^2\rVert_{S_1}=\mathrm{Tr}\,H`$ | [axiom_III_curvature](../axioms/axiom_III_curvature.md) |
+| **一** | 曲率版（有限维） | 几何 | $`\gamma=\lVert\delta^2F/\delta\psi^2\rVert_{S_1}=\mathrm{Tr}\,H`$ | [axiom_III_curvature](../../axioms/axiom_III_curvature.md) |
 | **二** | 重整化版（连续极限） | 几何 | $`\gamma_{\text{ren}}=\zeta_{D^2}(-1/2)`$ | [axiom_IV_note_gamma_renormalization](axiom_IV_note_gamma_renormalization.md)、[axiom_III_IV_gamma_regularity_and_eta](axiom_III_IV_gamma_regularity_and_eta.md) |
 | **三** | 精度商版 | 信息 | 精度结构 $`\{\Pi_\epsilon\}`$，$`\gamma=\sum_i\epsilon_i^{-2}`$ | [axiom_III_precision_quotient](axiom_III_precision_quotient.md) |
 
@@ -62,5 +62,5 @@
 *文档版本：v1.0*
 *时间：2026-09-27*
 *定位：`notes/` · 公理 III 总览（索引）*
-*上游：axioms/axiom_III_curvature.md、notes/axiom_III_IV_gamma_regularity_and_eta.md*
+*上游：axioms/axiom_III_curvature.md、notes/axiom_notes/axiom_III_IV_gamma_regularity_and_eta.md*
 *配套：axiom_III_precision_quotient.md、axiom_III_topological_face.md*

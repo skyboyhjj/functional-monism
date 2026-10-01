@@ -1,6 +1,6 @@
 # Serre 上同调链 · 验证脚本
 
-支撑 [serre_sheaf_cohomology_zeta.md](../../notes/serre_sheaf_cohomology_zeta.md) 数值结论的 4 个独立单文件脚本，均为「先算后说」——运行即打印结论，无需输入参数。
+支撑 [serre_sheaf_cohomology_zeta.md](../../notes/topics/serre_sheaf_cohomology_zeta.md) 数值结论的 4 个独立单文件脚本，均为「先算后说」——运行即打印结论，无需输入参数。
 
 ## 怎么跑
 

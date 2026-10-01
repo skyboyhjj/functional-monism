@@ -2,7 +2,7 @@
 
 **——对 §四 的逐句核验、两处口径钉正、一处深读**
 
-> **定位**：`notes/` 批注稿（companion to `notes/axiom_II_bridge_langlands.md`）。
+> **定位**：`notes/` 批注稿（companion to `notes/axiom_notes/axiom_II_bridge_langlands.md`）。
 > **对象**：该注 **§四「Connes 路线 = 这座桥」**。
 > **方法**：先取原文与文献要点（Connes, *Selecta Math.* **5** (1999)；Connes–Consani, *Selecta Math.* **27** (2021)），再逐句核验。
 > **结论**：**方向对；两处口径需钉；钉完后 §四 就是"桥"的算子版。**
@@ -130,4 +130,4 @@ $$\Delta=H(1+H)=H^{2}+H$$
 
 ---
 
-*v1.0　时间：2026-09-30　定位：`notes/` 批注稿（companion to `notes/axiom_II_bridge_langlands.md`）*
+*v1.0　时间：2026-09-30　定位：`notes/` 批注稿（companion to `notes/axiom_notes/axiom_II_bridge_langlands.md`）*
