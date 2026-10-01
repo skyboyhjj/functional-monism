@@ -3,7 +3,7 @@
 **承**该读解稿 §3.1 的**可直接搬运**一条　·　**v1.4**
 
 > **定位**：`notes/` 批注稿（续篇）。
-> **原文**：《世界是给定的，还是共同生成的？——自由能原理的数学谱系与本体论边界》（DWL Cognition，2026-09-30）。链接 https://mp.weixin.qq.com/s/7mFTQsLIRLSaxJKc8JSXjg ；本地 PDF 转写 `fep_yuanwen.txt`。
+> **原文**：《世界是给定的，还是共同生成的？——自由能原理的数学谱系与本体论边界》（DWL Cognition，2026-09-30）。链接 https://mp.weixin.qq.com/s/7mFTQsLIRLSaxJKc8JSXjg 。
 
 ### 修订说明
 
