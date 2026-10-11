@@ -39,7 +39,7 @@
 | 公理 II | 演化公理 | 路径积分满足 $\delta\int F[\psi]\,dt = 0$ |
 | 公理 III | 精度公理 | 认知置信度 $\gamma = \left\lVert \dfrac{\delta^2 F}{\delta\psi^2} \right\rVert_{\mathcal{S}_1}$（Schatten-1 / 迹范数） |
 
-> 另有**公理 IV（泛函对应原理）**处理连续极限与重整化。全部公理详见 [axioms/](axioms/) 目录。
+> 另有<strong>公理 IV（泛函对应原理）</strong>处理连续极限与重整化。全部公理详见 [axioms/](axioms/) 目录。
 
 ## 项目结构
 
