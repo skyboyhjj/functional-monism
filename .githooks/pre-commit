@@ -1,0 +1,13 @@
+#!/bin/sh
+# 提交公理(axioms/)/笔记(notes/) Markdown 前自动检查 GitHub 显示格式。
+# 若发现 ERROR，则退出非零以阻止提交。
+# 启用方式（一次性）：git config core.hooksPath .githooks
+
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(axioms|notes)/.*\.md$' || true)
+
+if [ -z "$files" ]; then
+    exit 0
+fi
+
+echo "检查 axioms/notes 显示格式..."
+python scripts/check_display_format.py $files

@@ -122,4 +122,4 @@ $$\frac{\delta^2 S_{\mathrm{Dirac}}}{\delta\bar\psi\,\delta\psi}=i\gamma^\mu\par
 
 *文档版本：v1.0*
 *时间：2026-09-14*
-*配套：axiom_II_evolution.md、axiom_II_example_dirac_field.md、notes/spinor_notes.md*
+*配套：axiom_II_evolution.md、axiom_II_example_dirac_field.md、notes/instances/spinor_notes.md*

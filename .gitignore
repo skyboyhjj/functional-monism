@@ -75,6 +75,7 @@ venv.bak/
 # IDE
 .idea/
 .vscode/
+.trae/
 *.swp
 *.swo
 *~
@@ -95,3 +96,9 @@ thoughtseeds_model-main/
 02-泛函分析/
 03-泛函一元论/
 04-五行/
+05-朗兰兹纲领/
+10-五条形式标准/
+06-朱载堉十二律/
+
+# 例外：发布到 notes/figures 的图片（定向放行）
+!notes/figures/*.png
