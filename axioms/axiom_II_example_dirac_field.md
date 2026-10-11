@@ -27,7 +27,7 @@ $$\delta\int F[\psi]\,dt=0$$
 
 $$\psi:\ M\to\Delta,\qquad \Delta=\mathbb C^4\ (\text{Weyl}_L\oplus\text{Weyl}_R)$$
 
-（自旋群的双覆盖结构，见 [spinor_notes.md](../notes/instances/spinor_notes.md)。）
+（自旋群的双覆盖结构，详见旋量笔记——未纳入本分支。）
 
 ---
 
