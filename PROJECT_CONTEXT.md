@@ -262,7 +262,7 @@ pytest tests/
 
 > **适用范围：仅 master 分支**。本节的 `.githooks/` 与 `scripts/check_display_format.py` 未纳入精简发布分支 `main`。
 
-提交 `axioms/` 或 `notes/` 目录下的 Markdown 前，会自动检查 GitHub 网页端的显示格式问题（LaTeX / MathJax / KaTeX / CommonMark）。工具已集成到 Git pre-commit 钩子，无需手动运行。
+提交 `axioms/`、`notes/`、`results/` 目录及根目录 `README.md` 的 Markdown 前，会自动检查 GitHub 网页端的显示格式问题（LaTeX / MathJax / KaTeX / CommonMark）。工具已集成到 Git pre-commit 钩子，无需手动运行。
 
 **启用（一次性）**：
 
@@ -273,7 +273,7 @@ git config core.hooksPath .githooks
 **手动运行**：
 
 ```bash
-python scripts/check_display_format.py           # 默认检查 axioms/ 与 notes/
+python scripts/check_display_format.py           # 默认检查 axioms/、notes/、results/ 与 README.md
 python scripts/check_display_format.py axioms/axiom_I_existence.md
 ```
 

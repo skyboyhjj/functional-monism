@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-检查 axioms/ 与 notes/ 目录下 Markdown 文档的 GitHub 网页端显示格式问题。
+检查 axioms/、notes/、results/ 目录与根目录 README.md 的 GitHub 网页端显示格式问题。
 
 已知 bug 与对应规则（详见 PROJECT_CONTEXT.md「公理/笔记显示格式自动检查」）：
 
@@ -13,7 +13,7 @@
 
 用法：
   python scripts/check_display_format.py [文件或目录 ...]
-  不带参数时默认检查 axioms/ 与 notes/ 目录（递归 *.md）。
+  不带参数时默认检查 axioms/、notes/、results/ 目录（递归 *.md）与根目录 README.md。
   发现 ERROR 时退出码为 1（供 pre-commit 拦截）。
 """
 
@@ -139,11 +139,11 @@ def find_issues(path):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="检查 axioms/notes 的 Markdown 显示格式")
-    parser.add_argument("paths", nargs="*", help="文件或目录；缺省检查 axioms/ 与 notes/")
+    parser = argparse.ArgumentParser(description="检查 Markdown 文档的 GitHub 显示格式")
+    parser.add_argument("paths", nargs="*", help="文件或目录；缺省检查 axioms/、notes/、results/ 与 README.md")
     args = parser.parse_args(argv)
 
-    targets = args.paths or ["axioms", "notes"]
+    targets = args.paths or ["axioms", "notes", "results", "README.md"]
     files = []
     for t in targets:
         p = Path(t)
